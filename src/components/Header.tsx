@@ -8,12 +8,16 @@ import {
   Sparkles,
   Download,
   RotateCcw,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { EmergencyModal } from './EmergencyModal';
 
 export const Header: React.FC = () => {
   const {
+    currentUser,
+    logout,
     fontSize,
     setFontSize,
     simpleMode,
@@ -156,6 +160,35 @@ export const Header: React.FC = () => {
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
+
+          {/* User Profile & Sign Out */}
+          {currentUser && (
+            <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200 shrink-0">
+              <div
+                className="flex items-center gap-1.5 bg-slate-100 py-1 px-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700"
+                title={`Signed in as ${currentUser.name} (${currentUser.email})`}
+              >
+                <div className="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <span className="max-w-[120px] truncate hidden md:inline-block">
+                  {currentUser.name}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  if (window.confirm(`Sign out of ${currentUser.name}'s account?`)) {
+                    logout();
+                  }
+                }}
+                className="px-2.5 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 hover:border-rose-300 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors"
+                title="Sign out of CareCompanion"
+              >
+                <LogOut className="w-4 h-4 text-slate-500" />
+                <span className="hidden sm:inline-block">Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

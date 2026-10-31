@@ -9,6 +9,8 @@ import {
   DoseLog,
   DoseStatus,
   WellnessLogEntry,
+  CurrentUser,
+  RegisteredUser,
 } from '../types/health';
 import { generateHealthReportDocx } from '../utils/docxExport';
 import { generateHealthReportPdf } from '../utils/pdfExport';
@@ -25,6 +27,14 @@ import {
 } from '../data/mockData';
 
 interface HealthContextType {
+  // Authentication & User State
+  currentUser: CurrentUser | null;
+  registeredUsers: RegisteredUser[];
+  login: (email: string, password: string) => { success: boolean; error?: string };
+  register: (name: string, email: string, password: string) => { success: boolean; error?: string };
+  logout: () => void;
+  loginAsDemo: () => void;
+
   profile: UserProfile;
   updateProfile: (updated: Partial<UserProfile>) => void;
   
@@ -112,9 +122,59 @@ const STORAGE_KEYS = {
   FONT_SIZE: 'carecompanion_font_size',
   HIGH_CONTRAST: 'carecompanion_high_contrast',
   SIMPLE_MODE: 'carecompanion_simple_mode',
+  USERS: 'carecompanion_users',
+  CURRENT_USER: 'carecompanion_current_user',
 };
 
+const defaultUsers: RegisteredUser[] = [
+  {
+    id: 'user-demo-eleanor',
+    name: 'Eleanor Davis',
+    email: 'eleanor@example.com',
+    passwordHash: 'Eleanor123!',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+];
+
 export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Authentication & Users
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.USERS);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error('Failed to parse registered users', e);
+      }
+    }
+    return defaultUsers;
+  });
+
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse current user', e);
+      }
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    }
+  }, [currentUser]);
+
   // Profiles
   const [profile, setProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -718,6 +778,120 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  // Authentication & User Management
+  const login = (email: string, password: string): { success: boolean; error?: string } => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = registeredUsers.find((u) => u.email.toLowerCase() === normalizedEmail);
+
+    if (!user) {
+      return { success: false, error: 'No account found with this email address.' };
+    }
+
+    if (user.passwordHash !== password) {
+      return { success: false, error: 'Incorrect password. Please verify and try again.' };
+    }
+
+    const current: CurrentUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
+    setCurrentUser(current);
+
+    setProfile((prev) => ({
+      ...prev,
+      name: user.name,
+      preferredName: user.name.split(' ')[0] || user.name,
+    }));
+
+    setActiveNotification({
+      title: 'Welcome Back!',
+      message: `Signed in as ${user.name}.`,
+      type: 'success',
+    });
+
+    return { success: true };
+  };
+
+  const register = (name: string, email: string, password: string): { success: boolean; error?: string } => {
+    const trimmedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!trimmedName) {
+      return { success: false, error: 'Please enter your full name.' };
+    }
+    if (!normalizedEmail || !normalizedEmail.includes('@') || !normalizedEmail.includes('.')) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+
+    // Verify password criteria requested:
+    // At least 8 characters long
+    // At least 1 capital letter (A-Z)
+    // At least 1 special symbol (! @ # $ % ^ *)
+    if (password.length < 8) {
+      return { success: false, error: 'Password must be at least 8 characters long.' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { success: false, error: 'Password must contain at least 1 capital letter (A-Z).' };
+    }
+    if (!/[!@#$%^*]/.test(password)) {
+      return { success: false, error: 'Password must contain at least 1 special symbol (! @ # $ % ^ *).' };
+    }
+
+    const existing = registeredUsers.find((u) => u.email.toLowerCase() === normalizedEmail);
+    if (existing) {
+      return { success: false, error: 'An account with this email already exists. Please log in.' };
+    }
+
+    const newUser: RegisteredUser = {
+      id: `user-${Date.now()}`,
+      name: trimmedName,
+      email: normalizedEmail,
+      passwordHash: password,
+      createdAt: new Date().toISOString(),
+    };
+
+    setRegisteredUsers((prev) => [...prev, newUser]);
+
+    const current: CurrentUser = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+    };
+    setCurrentUser(current);
+
+    setProfile((prev) => ({
+      ...prev,
+      name: trimmedName,
+      preferredName: trimmedName.split(' ')[0] || trimmedName,
+    }));
+
+    setActiveNotification({
+      title: 'Account Created!',
+      message: `Welcome to CareCompanion, ${trimmedName}!`,
+      type: 'success',
+    });
+
+    return { success: true };
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    setActiveNotification({
+      title: 'Signed Out',
+      message: 'You have been safely signed out.',
+      type: 'info',
+    });
+  };
+
+  const loginAsDemo = () => {
+    const demo = defaultUsers[0];
+    if (!registeredUsers.some((u) => u.email.toLowerCase() === demo.email.toLowerCase())) {
+      setRegisteredUsers((prev) => [demo, ...prev]);
+    }
+    login(demo.email, demo.passwordHash);
+  };
+
   // Mobility
   const toggleRoutine = (id: string) => {
     setMobilityRoutines((prev) =>
@@ -735,7 +909,13 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setWellnessData(initialWellnessData);
     setWellnessLogs(initialWellnessLogs);
     setMobilityRoutines(initialMobilityRoutines);
+    const currentUsers = registeredUsers;
+    const currentActiveUser = currentUser;
     localStorage.clear();
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(currentUsers));
+    if (currentActiveUser) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentActiveUser));
+    }
     setActiveNotification({
       title: 'Restored to Sample Data',
       message: 'Default senior health profile and sample records have been loaded.',
@@ -791,6 +971,12 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   return (
     <HealthContext.Provider
       value={{
+        currentUser,
+        registeredUsers,
+        login,
+        register,
+        logout,
+        loginAsDemo,
         profile,
         updateProfile,
         medications,

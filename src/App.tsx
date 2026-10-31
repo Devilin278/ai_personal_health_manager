@@ -10,11 +10,16 @@ import { AppointmentsView } from './views/AppointmentsView';
 import { WellnessView } from './views/WellnessView';
 import { RecordsView } from './views/RecordsView';
 import { SimpleDashboardView } from './views/SimpleDashboardView';
+import { AuthView } from './views/AuthView';
 import { FloatingAiAssistant } from './components/FloatingAiAssistant';
 import { Heart, ShieldAlert, Phone, HelpCircle } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { activeTab, fontSize, highContrast, simpleMode, profile } = useHealth();
+  const { currentUser, activeTab, fontSize, highContrast, simpleMode, profile } = useHealth();
+
+  if (!currentUser) {
+    return <AuthView />;
+  }
 
   const fontSizeClass = {
     normal: 'font-scale-normal',
