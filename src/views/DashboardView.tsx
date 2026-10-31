@@ -14,11 +14,16 @@ import {
   AlertCircle,
   Plus,
   Printer,
+  ShieldAlert,
+  Pencil,
+  Phone,
+  User,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { PrintableSummaryModal } from '../components/PrintableSummaryModal';
 import { AddMedicationModal } from '../components/AddMedicationModal';
 import { AddAppointmentModal } from '../components/AddAppointmentModal';
+import { EditEmergencyContactModal } from '../components/EditEmergencyContactModal';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -39,6 +44,7 @@ export const DashboardView: React.FC = () => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isAddMedOpen, setIsAddMedOpen] = useState(false);
   const [isAddAptOpen, setIsAddAptOpen] = useState(false);
+  const [isEditEmergencyOpen, setIsEditEmergencyOpen] = useState(false);
 
   // Time of day greeting
   const hour = new Date().getHours();
@@ -98,6 +104,15 @@ export const DashboardView: React.FC = () => {
               <span className="bg-teal-900/60 border border-teal-500/30 px-3 py-1 rounded-full font-semibold">
                 Doctor: {profile.primaryDoctor.name}
               </span>
+              <button
+                onClick={() => setIsEditEmergencyOpen(true)}
+                className="bg-red-950/70 hover:bg-red-900/90 border border-red-400/40 text-red-100 px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 transition-all text-xs sm:text-sm active:scale-95 cursor-pointer shadow-xs"
+                title="Click to update emergency contact"
+              >
+                <Phone className="w-3.5 h-3.5 text-red-300" />
+                <span>Emergency: {profile.emergencyContact.name} ({profile.emergencyContact.relationship})</span>
+                <Pencil className="w-3 h-3 text-red-300" />
+              </button>
               <span className="bg-rose-950/60 border border-rose-400/30 text-rose-200 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5 text-rose-300" /> Allergies: {profile.allergies.map(a => a.allergen).join(', ')}
               </span>
@@ -276,6 +291,62 @@ export const DashboardView: React.FC = () => {
 
         {/* Right Column: Upcoming Doctor Visit & Daily Wellness */}
         <div className="lg:col-span-5 space-y-6">
+          {/* Emergency Contact Quick Card */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-6 h-6 text-red-600" />
+                <h3 className="text-xl font-extrabold text-slate-900">
+                  Emergency Contact
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsEditEmergencyOpen(true)}
+                className="text-xs font-bold text-red-700 hover:text-red-900 hover:underline flex items-center gap-1"
+                aria-label="Update emergency contact"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Update</span>
+              </button>
+            </div>
+
+            <div className="bg-red-50/70 border border-red-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-extrabold text-slate-900 text-base">
+                    {profile.emergencyContact.name}
+                  </h4>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">
+                    {profile.emergencyContact.relationship}
+                  </span>
+                </div>
+                <p className="text-sm font-bold text-slate-700 mt-1 flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-red-600" />
+                  <span>{profile.emergencyContact.phone}</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                  Called first by emergency responders & clinic staff
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={`tel:${profile.emergencyContact.phone.replace(/[^0-9]/g, '')}`}
+                  className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call</span>
+                </a>
+                <button
+                  onClick={() => setIsEditEmergencyOpen(true)}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Upcoming Appointment Card */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
@@ -443,6 +514,7 @@ export const DashboardView: React.FC = () => {
       <PrintableSummaryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} />
       <AddMedicationModal isOpen={isAddMedOpen} onClose={() => setIsAddMedOpen(false)} />
       <AddAppointmentModal isOpen={isAddAptOpen} onClose={() => setIsAddAptOpen(false)} />
+      <EditEmergencyContactModal isOpen={isEditEmergencyOpen} onClose={() => setIsEditEmergencyOpen(false)} />
     </div>
   );
 };

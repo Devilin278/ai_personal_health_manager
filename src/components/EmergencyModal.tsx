@@ -1,6 +1,7 @@
-import React from 'react';
-import { Phone, AlertCircle, X, ShieldAlert, HeartPulse, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Phone, AlertCircle, X, ShieldAlert, HeartPulse, User, Pencil } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
+import { EditEmergencyContactModal } from './EditEmergencyContactModal';
 
 interface EmergencyModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface EmergencyModalProps {
 
 export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose }) => {
   const { profile, speakText } = useHealth();
+  const [isEditContactOpen, setIsEditContactOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -74,19 +76,36 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
             {/* Emergency Contact */}
             <div className="border-2 border-slate-200 rounded-xl p-4 bg-slate-50 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-blue-800 font-bold mb-1">
-                  <User className="w-5 h-5" />
-                  <span>Family Contact</span>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2 text-blue-800 font-bold">
+                    <User className="w-5 h-5" />
+                    <span>Family / Emergency Contact</span>
+                  </div>
+                  <button
+                    onClick={() => setIsEditContactOpen(true)}
+                    className="text-xs text-blue-700 hover:text-blue-900 font-bold flex items-center gap-1 hover:underline"
+                    title="Change emergency contact"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
                 </div>
                 <p className="font-bold text-lg text-slate-800">{profile.emergencyContact.name}</p>
                 <p className="text-sm text-slate-600">Relationship: {profile.emergencyContact.relationship}</p>
               </div>
-              <a
-                href={`tel:${profile.emergencyContact.phone.replace(/[^0-9]/g, '')}`}
-                className="mt-4 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-base transition-colors"
-              >
-                <Phone className="w-4 h-4" /> Call {profile.emergencyContact.relationship} ({profile.emergencyContact.phone})
-              </a>
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                <a
+                  href={`tel:${profile.emergencyContact.phone.replace(/[^0-9]/g, '')}`}
+                  className="flex-1 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-base transition-colors"
+                >
+                  <Phone className="w-4 h-4" /> Call ({profile.emergencyContact.phone})
+                </a>
+                <button
+                  onClick={() => setIsEditContactOpen(true)}
+                  className="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Pencil className="w-4 h-4" /> Update
+                </button>
+              </div>
             </div>
           </div>
 
@@ -141,6 +160,12 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
           </div>
         </div>
       </div>
+
+      {/* Edit Emergency Contact Modal */}
+      <EditEmergencyContactModal
+        isOpen={isEditContactOpen}
+        onClose={() => setIsEditContactOpen(false)}
+      />
     </div>
   );
 };

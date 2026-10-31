@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Pill,
   CalendarDays,
@@ -9,8 +9,11 @@ import {
   ArrowRight,
   Volume2,
   Sparkles,
+  Pencil,
+  User,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
+import { EditEmergencyContactModal } from '../components/EditEmergencyContactModal';
 
 export const SimpleDashboardView: React.FC = () => {
   const {
@@ -25,6 +28,8 @@ export const SimpleDashboardView: React.FC = () => {
     toggleSimpleMode,
     speakText,
   } = useHealth();
+
+  const [isEditEmergencyOpen, setIsEditEmergencyOpen] = useState(false);
 
   // Next pending dose
   const nextPendingDose = doseLogs.find((d) => d.status === 'pending');
@@ -206,6 +211,64 @@ export const SimpleDashboardView: React.FC = () => {
           </a>
         </div>
       )}
+
+      {/* 4. Family & Emergency Contact Card */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-8 h-8" />
+            </div>
+            <div>
+              <span className="text-xs font-extrabold uppercase text-red-700 tracking-wider">
+                Emergency Contact
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                {profile.emergencyContact.name}
+              </h3>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsEditEmergencyOpen(true)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm flex items-center gap-1.5 transition-colors"
+          >
+            <Pencil className="w-4 h-4 text-slate-600" />
+            <span>Change</span>
+          </button>
+        </div>
+
+        <div className="bg-red-50/70 p-5 rounded-2xl border border-red-200 space-y-1">
+          <p className="text-base font-bold text-red-950">
+            Relationship: {profile.emergencyContact.relationship}
+          </p>
+          <p className="text-sm font-semibold text-slate-700">
+            Phone: {profile.emergencyContact.phone}
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <a
+            href={`tel:${profile.emergencyContact.phone.replace(/[^0-9]/g, '')}`}
+            className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl text-lg flex items-center justify-center gap-2 shadow-sm transition-colors"
+          >
+            <Phone className="w-6 h-6" />
+            <span>Call {profile.emergencyContact.relationship} ({profile.emergencyContact.phone})</span>
+          </a>
+          <button
+            onClick={() => setIsEditEmergencyOpen(true)}
+            className="px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-base transition-colors"
+          >
+            Edit Contact Info
+          </button>
+        </div>
+      </div>
+
+      {/* Edit Emergency Contact Modal */}
+      <EditEmergencyContactModal
+        isOpen={isEditEmergencyOpen}
+        onClose={() => setIsEditEmergencyOpen(false)}
+      />
     </div>
   );
 };

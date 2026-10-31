@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
-import { Printer, Download, X, Heart, ShieldCheck } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Printer, Download, X, Heart, ShieldCheck, Pencil } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { getTodayDateString } from '../data/mockData';
+import { EditEmergencyContactModal } from './EditEmergencyContactModal';
 
 interface PrintableSummaryModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const PrintableSummaryModal: React.FC<PrintableSummaryModalProps> = ({
 }) => {
   const { profile, medications, appointments, wellnessData } = useHealth();
   const printAreaRef = useRef<HTMLDivElement>(null);
+  const [isEditEmergencyOpen, setIsEditEmergencyOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -95,9 +97,17 @@ export const PrintableSummaryModal: React.FC<PrintableSummaryModalProps> = ({
 
             {/* Emergency Contacts */}
             <div className="border-l-4 border-blue-500 pl-3">
-              <span className="text-xs font-bold uppercase text-blue-800 tracking-wider">
-                Emergency Contact
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-blue-800 tracking-wider">
+                  Emergency Contact
+                </span>
+                <button
+                  onClick={() => setIsEditEmergencyOpen(true)}
+                  className="print:hidden text-[11px] text-blue-700 hover:text-blue-900 font-bold flex items-center gap-1 hover:underline"
+                >
+                  <Pencil className="w-3 h-3" /> Edit
+                </button>
+              </div>
               <p className="font-bold text-slate-900 mt-1">
                 {profile.emergencyContact.name} ({profile.emergencyContact.relationship})
               </p>
@@ -265,6 +275,12 @@ export const PrintableSummaryModal: React.FC<PrintableSummaryModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Edit Emergency Contact Modal */}
+      <EditEmergencyContactModal
+        isOpen={isEditEmergencyOpen}
+        onClose={() => setIsEditEmergencyOpen(false)}
+      />
     </div>
   );
 };
