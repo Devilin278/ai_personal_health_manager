@@ -33,6 +33,8 @@ const COLORS = {
   BORDER_GRAY: 'CBD5E1', // Table borders
   RED_ALERT: 'B91C1C', // Allergy red
   RED_BG: 'FEF2F2', // Allergy light red
+  RED_DARK: '991B1B', // Severe red
+  AMBER_WARN: 'D97706', // Moderate warning
 };
 
 export const generateHealthReportDocx = async (data: {
@@ -53,13 +55,20 @@ export const generateHealthReportDocx = async (data: {
     right: { style: BorderStyle.SINGLE, size: 1, color: COLORS.BORDER_GRAY },
   };
 
+  const allergyBorderConfig = {
+    top: { style: BorderStyle.SINGLE, size: 1, color: 'FCA5A5' },
+    bottom: { style: BorderStyle.SINGLE, size: 1, color: 'FCA5A5' },
+    left: { style: BorderStyle.SINGLE, size: 1, color: 'FCA5A5' },
+    right: { style: BorderStyle.SINGLE, size: 1, color: 'FCA5A5' },
+  };
+
   const doc = new Document({
     sections: [
       {
         properties: {
           page: {
             margin: {
-              top: 720, // 0.5 inch margins for spacious printing
+              top: 720, // 0.5 inch margins
               right: 720,
               bottom: 720,
               left: 720,
@@ -70,7 +79,7 @@ export const generateHealthReportDocx = async (data: {
           // Header / Banner
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 120 },
+            spacing: { after: 100 },
             children: [
               new TextRun({
                 text: 'CareCompanion',
@@ -83,10 +92,10 @@ export const generateHealthReportDocx = async (data: {
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 80 },
+            spacing: { after: 60 },
             children: [
               new TextRun({
-                text: 'Personal Health & Medication Management Summary',
+                text: 'Personal Health, Medication & Doctor Visit Summary',
                 bold: true,
                 size: 26, // 13pt
                 color: COLORS.SLATE_DARK,
@@ -96,10 +105,10 @@ export const generateHealthReportDocx = async (data: {
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 300 },
+            spacing: { after: 260 },
             children: [
               new TextRun({
-                text: `Prepared for: ${profile.name}  |  Generated on: ${todayStr}`,
+                text: `Patient: ${profile.name}  |  Generated on: ${todayStr}`,
                 size: 20, // 10pt
                 color: COLORS.SLATE_MUTED,
                 font: 'Arial',
@@ -108,21 +117,7 @@ export const generateHealthReportDocx = async (data: {
             ],
           }),
 
-          // Section 1: Patient Details & Medical ID Grid
-          new Paragraph({
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 200, after: 120 },
-            children: [
-              new TextRun({
-                text: '1. Patient Overview & Emergency Contacts',
-                bold: true,
-                size: 24,
-                color: COLORS.TEAL_DARK,
-                font: 'Arial',
-              }),
-            ],
-          }),
-
+          // Patient Details & Medical ID Grid
           new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
@@ -134,14 +129,14 @@ export const generateHealthReportDocx = async (data: {
                     shading: { fill: COLORS.TEAL_LIGHT, type: ShadingType.CLEAR },
                     children: [
                       new Paragraph({
-                        spacing: { after: 60 },
+                        spacing: { after: 50 },
                         children: [
-                          new TextRun({ text: 'Patient: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
+                          new TextRun({ text: 'Patient Name: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
                           new TextRun({ text: profile.name, size: 20, bold: true }),
                         ],
                       }),
                       new Paragraph({
-                        spacing: { after: 60 },
+                        spacing: { after: 50 },
                         children: [
                           new TextRun({ text: 'Date of Birth: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
                           new TextRun({ text: profile.dateOfBirth, size: 20 }),
@@ -161,22 +156,22 @@ export const generateHealthReportDocx = async (data: {
                     shading: { fill: COLORS.TEAL_LIGHT, type: ShadingType.CLEAR },
                     children: [
                       new Paragraph({
-                        spacing: { after: 60 },
+                        spacing: { after: 50 },
                         children: [
                           new TextRun({ text: 'Primary Doctor: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
                           new TextRun({ text: `${profile.primaryDoctor.name} (${profile.primaryDoctor.phone})`, size: 20 }),
                         ],
                       }),
                       new Paragraph({
-                        spacing: { after: 60 },
+                        spacing: { after: 50 },
                         children: [
-                          new TextRun({ text: 'Clinic: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
-                          new TextRun({ text: profile.primaryDoctor.clinic, size: 20 }),
+                          new TextRun({ text: 'Preferred Pharmacy: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
+                          new TextRun({ text: `${profile.preferredPharmacy.name} (${profile.preferredPharmacy.phone})`, size: 19 }),
                         ],
                       }),
                       new Paragraph({
                         children: [
-                          new TextRun({ text: 'Family Contact: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
+                          new TextRun({ text: 'Emergency Contact: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
                           new TextRun({ text: `${profile.emergencyContact.name} (${profile.emergencyContact.relationship}) - ${profile.emergencyContact.phone}`, size: 20, bold: true }),
                         ],
                       }),
@@ -187,39 +182,24 @@ export const generateHealthReportDocx = async (data: {
             ],
           }),
 
-          // Allergies & Conditions Callout
+          // Chronic Conditions
           new Paragraph({
-            spacing: { before: 140, after: 80 },
+            spacing: { before: 120, after: 200 },
             children: [
-              new TextRun({
-                text: 'CRITICAL DRUG ALLERGIES: ',
-                bold: true,
-                size: 20,
-                color: COLORS.RED_ALERT,
-              }),
-              new TextRun({
-                text: profile.allergies.map((a) => `${a.allergen} (${a.reaction})`).join('; ') || 'No known allergies',
-                bold: true,
-                size: 20,
-                color: COLORS.RED_ALERT,
-              }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { after: 200 },
-            children: [
-              new TextRun({ text: 'Active Conditions: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
+              new TextRun({ text: 'Active Chronic Conditions: ', bold: true, size: 20, color: COLORS.SLATE_DARK }),
               new TextRun({ text: profile.chronicConditions.join('; '), size: 20 }),
             ],
           }),
 
-          // Section 2: Complete Medication & Supplement List
+          // ==========================================
+          // 1. MEDICATIONS & SUPPLEMENTS LIST (FIRST)
+          // ==========================================
           new Paragraph({
             heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 120 },
             children: [
               new TextRun({
-                text: `2. Medications & Supplements List (${medications.length} Active Items)`,
+                text: `1. Medications & Supplements List (${medications.length} Active Items)`,
                 bold: true,
                 size: 24,
                 color: COLORS.TEAL_DARK,
@@ -238,7 +218,7 @@ export const generateHealthReportDocx = async (data: {
                   new TableCell({
                     borders: tableBorderConfig,
                     shading: { fill: COLORS.TEAL_DARK, type: ShadingType.CLEAR },
-                    width: { size: 25, type: WidthType.PERCENTAGE },
+                    width: { size: 24, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
                         children: [new TextRun({ text: 'Medication / Supplement', bold: true, color: 'FFFFFF', size: 19 })],
@@ -248,7 +228,7 @@ export const generateHealthReportDocx = async (data: {
                   new TableCell({
                     borders: tableBorderConfig,
                     shading: { fill: COLORS.TEAL_DARK, type: ShadingType.CLEAR },
-                    width: { size: 15, type: WidthType.PERCENTAGE },
+                    width: { size: 16, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
                         children: [new TextRun({ text: 'Dose & Form', bold: true, color: 'FFFFFF', size: 19 })],
@@ -271,7 +251,7 @@ export const generateHealthReportDocx = async (data: {
                     width: { size: 15, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
-                        children: [new TextRun({ text: 'Food Notes', bold: true, color: 'FFFFFF', size: 19 })],
+                        children: [new TextRun({ text: 'Food Guidance', bold: true, color: 'FFFFFF', size: 19 })],
                       }),
                     ],
                   }),
@@ -281,7 +261,7 @@ export const generateHealthReportDocx = async (data: {
                     width: { size: 15, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
-                        children: [new TextRun({ text: 'Prescriber / Purpose', bold: true, color: 'FFFFFF', size: 19 })],
+                        children: [new TextRun({ text: 'Prescriber & Purpose', bold: true, color: 'FFFFFF', size: 19 })],
                       }),
                     ],
                   }),
@@ -385,7 +365,152 @@ export const generateHealthReportDocx = async (data: {
             ],
           }),
 
-          // Section 3: Healthcare Providers & Doctor Appointments
+          // ==========================================
+          // 2. ALLERGIES LIST (SECOND)
+          // ==========================================
+          new Paragraph({
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 260, after: 120 },
+            children: [
+              new TextRun({
+                text: '2. Known Allergies & Adverse Drug Reactions',
+                bold: true,
+                size: 24,
+                color: COLORS.RED_ALERT,
+                font: 'Arial',
+              }),
+            ],
+          }),
+
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              // Header Row
+              new TableRow({
+                tableHeader: true,
+                children: [
+                  new TableCell({
+                    borders: allergyBorderConfig,
+                    shading: { fill: COLORS.RED_ALERT, type: ShadingType.CLEAR },
+                    width: { size: 28, type: WidthType.PERCENTAGE },
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: 'Allergen / Substance', bold: true, color: 'FFFFFF', size: 19 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    borders: allergyBorderConfig,
+                    shading: { fill: COLORS.RED_ALERT, type: ShadingType.CLEAR },
+                    width: { size: 36, type: WidthType.PERCENTAGE },
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: 'Reaction & Symptoms Experienced', bold: true, color: 'FFFFFF', size: 19 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    borders: allergyBorderConfig,
+                    shading: { fill: COLORS.RED_ALERT, type: ShadingType.CLEAR },
+                    width: { size: 16, type: WidthType.PERCENTAGE },
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: 'Severity Level', bold: true, color: 'FFFFFF', size: 19 })],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    borders: allergyBorderConfig,
+                    shading: { fill: COLORS.RED_ALERT, type: ShadingType.CLEAR },
+                    width: { size: 20, type: WidthType.PERCENTAGE },
+                    children: [
+                      new Paragraph({
+                        children: [new TextRun({ text: 'Clinical Precaution', bold: true, color: 'FFFFFF', size: 19 })],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+
+              // Data Rows for Allergies
+              ...profile.allergies.map(
+                (allergy, index) =>
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        borders: allergyBorderConfig,
+                        shading: { fill: index % 2 === 0 ? 'FFFFFF' : COLORS.RED_BG, type: ShadingType.CLEAR },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: allergy.allergen,
+                                bold: true,
+                                size: 20,
+                                color: COLORS.RED_ALERT,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new TableCell({
+                        borders: allergyBorderConfig,
+                        shading: { fill: index % 2 === 0 ? 'FFFFFF' : COLORS.RED_BG, type: ShadingType.CLEAR },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: allergy.reaction,
+                                size: 19,
+                                color: COLORS.SLATE_DARK,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new TableCell({
+                        borders: allergyBorderConfig,
+                        shading: { fill: index % 2 === 0 ? 'FFFFFF' : COLORS.RED_BG, type: ShadingType.CLEAR },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text: allergy.severity.toUpperCase(),
+                                bold: true,
+                                size: 18,
+                                color: allergy.severity === 'severe' ? COLORS.RED_DARK : COLORS.AMBER_WARN,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      new TableCell({
+                        borders: allergyBorderConfig,
+                        shading: { fill: index % 2 === 0 ? 'FFFFFF' : COLORS.RED_BG, type: ShadingType.CLEAR },
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new TextRun({
+                                text:
+                                  allergy.severity === 'severe'
+                                    ? 'Strictly Avoid; High Risk'
+                                    : 'Avoid / Monitor Closely',
+                                size: 17,
+                                color: COLORS.SLATE_BODY,
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+              ),
+            ],
+          }),
+
+          // ==========================================
+          // 3. DOCTORS & APPOINTMENTS (LASTLY)
+          // ==========================================
           new Paragraph({
             heading: HeadingLevel.HEADING_2,
             spacing: { before: 260, after: 120 },
@@ -409,20 +534,20 @@ export const generateHealthReportDocx = async (data: {
                   new TableCell({
                     borders: tableBorderConfig,
                     shading: { fill: COLORS.TEAL_DARK, type: ShadingType.CLEAR },
-                    width: { size: 30, type: WidthType.PERCENTAGE },
+                    width: { size: 28, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
-                        children: [new TextRun({ text: 'Doctor / Provider', bold: true, color: 'FFFFFF', size: 19 })],
+                        children: [new TextRun({ text: 'Doctor / Specialist', bold: true, color: 'FFFFFF', size: 19 })],
                       }),
                     ],
                   }),
                   new TableCell({
                     borders: tableBorderConfig,
                     shading: { fill: COLORS.TEAL_DARK, type: ShadingType.CLEAR },
-                    width: { size: 30, type: WidthType.PERCENTAGE },
+                    width: { size: 32, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
-                        children: [new TextRun({ text: 'Clinic & Contact', bold: true, color: 'FFFFFF', size: 19 })],
+                        children: [new TextRun({ text: 'Clinic, Location & Phone', bold: true, color: 'FFFFFF', size: 19 })],
                       }),
                     ],
                   }),
@@ -432,7 +557,7 @@ export const generateHealthReportDocx = async (data: {
                     width: { size: 20, type: WidthType.PERCENTAGE },
                     children: [
                       new Paragraph({
-                        children: [new TextRun({ text: 'Date & Time', bold: true, color: 'FFFFFF', size: 19 })],
+                        children: [new TextRun({ text: 'Appointment Date & Time', bold: true, color: 'FFFFFF', size: 19 })],
                       }),
                     ],
                   }),
@@ -519,7 +644,9 @@ export const generateHealthReportDocx = async (data: {
             ],
           }),
 
-          // Section 4: Health Records & Diagnostic Summaries
+          // ==========================================
+          // 4. HEALTH RECORDS & TEST RESULTS
+          // ==========================================
           new Paragraph({
             heading: HeadingLevel.HEADING_2,
             spacing: { before: 260, after: 120 },
