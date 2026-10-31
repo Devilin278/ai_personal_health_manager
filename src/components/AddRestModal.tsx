@@ -211,3 +211,4 @@ export const AddRestModal: React.FC<AddRestModalProps> = ({ isOpen, onClose }) =
     </div>
   );
 };
+

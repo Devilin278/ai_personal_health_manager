@@ -61,10 +61,10 @@ export const AddBpmModal: React.FC<AddBpmModalProps> = ({ isOpen, onClose }) => 
             </div>
             <div>
               <h2 id="bpm-modal-title" className="text-xl font-bold">
-                Log Heart Rate (BPM) & Vitals
+                Log Blood Pressure & Heart Rate
               </h2>
               <p className="text-rose-100 text-xs sm:text-sm">
-                Track pulse readings throughout your day
+                Record systolic, diastolic, and pulse readings throughout your day
               </p>
             </div>
           </div>
@@ -211,7 +211,7 @@ export const AddBpmModal: React.FC<AddBpmModalProps> = ({ isOpen, onClose }) => 
               className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2"
             >
               <Check className="w-5 h-5" />
-              <span>Save Heart Rate</span>
+              <span>Save Blood Pressure</span>
             </button>
           </div>
         </form>
@@ -219,3 +219,4 @@ export const AddBpmModal: React.FC<AddBpmModalProps> = ({ isOpen, onClose }) => 
     </div>
   );
 };
+

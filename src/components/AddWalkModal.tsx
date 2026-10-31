@@ -194,3 +194,4 @@ export const AddWalkModal: React.FC<AddWalkModalProps> = ({ isOpen, onClose }) =
     </div>
   );
 };
+

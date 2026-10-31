@@ -141,20 +141,20 @@ export const WellnessView: React.FC = () => {
             </p>
           </div>
 
-          {/* "+ Add Glass" button (no '-' or '+' counters!) */}
+          {/* "Glass" button */}
           <div className="pt-2 border-t border-slate-100">
             <button
               onClick={handleAddWater}
               className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
-              aria-label="Add glass of water to log"
+              aria-label="Log glass of water"
             >
               <Plus className="w-5 h-5" />
-              <span>+ Add Glass</span>
+              <span>Glass</span>
             </button>
           </div>
         </div>
 
-        {/* 2. Sleep / Rest Card (Click "+ Rest" to input hours & 0/15/30/45 minutes) */}
+        {/* 2. Sleep / Rest Card */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
@@ -174,20 +174,20 @@ export const WellnessView: React.FC = () => {
             </p>
           </div>
 
-          {/* "+ Rest" Button */}
+          {/* "Rest" Button */}
           <div className="pt-2 border-t border-slate-100">
             <button
               onClick={() => setIsRestModalOpen(true)}
               className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
-              aria-label="Add rest or sleep to log"
+              aria-label="Log rest or sleep"
             >
               <Plus className="w-5 h-5" />
-              <span>+ Rest</span>
+              <span>Rest</span>
             </button>
           </div>
         </div>
 
-        {/* 3. Walk Card (Click "+ Add Walk" to input hours & 5-min increments) */}
+        {/* 3. Walk Card */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
@@ -207,48 +207,48 @@ export const WellnessView: React.FC = () => {
             </p>
           </div>
 
-          {/* "+ Add Walk" Button */}
+          {/* "Walk" Button */}
           <div className="pt-2 border-t border-slate-100">
             <button
               onClick={() => setIsWalkModalOpen(true)}
               className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
-              aria-label="Add walk to log"
+              aria-label="Log walk"
             >
               <Plus className="w-5 h-5" />
-              <span>+ Add Walk</span>
+              <span>Walk</span>
             </button>
           </div>
         </div>
 
-        {/* 4. Heart Rate / BPM Card (Click "+ Add Heart Rate" for multiple entries) */}
+        {/* 4. Blood Pressure & Heart Rate Card */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center">
               <Heart className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-full">
-              {latestBpmEntry ? `${bpmCount} logged` : 'Optimal < 100'}
+              {latestBpmEntry ? `${bpmCount} logged` : 'Optimal < 130/80'}
             </span>
           </div>
 
           <div>
             <h3 className="text-3xl font-extrabold text-slate-900">
-              {latestBpmEntry?.bpm || todayWellness.bloodPressure?.pulse || 68} <span className="text-base font-semibold text-slate-500">BPM</span>
+              {latestBpmEntry?.systolic || todayWellness.bloodPressure?.systolic || 124}/{latestBpmEntry?.diastolic || todayWellness.bloodPressure?.diastolic || 78} <span className="text-base font-semibold text-slate-500">mmHg</span>
             </h3>
             <p className="text-xs text-slate-600 font-medium mt-1">
-              BP: {latestBpmEntry?.systolic || todayWellness.bloodPressure?.systolic || 124}/{latestBpmEntry?.diastolic || todayWellness.bloodPressure?.diastolic || 78} mmHg
+              Pulse: {latestBpmEntry?.bpm || todayWellness.bloodPressure?.pulse || 68} BPM • {latestBpmEntry?.displayTime || todayWellness.bloodPressure?.time || 'Morning'}
             </p>
           </div>
 
-          {/* "+ Add Heart Rate" Button */}
+          {/* "Blood Pressure" Button */}
           <div className="pt-2 border-t border-slate-100">
             <button
               onClick={() => setIsBpmModalOpen(true)}
               className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
-              aria-label="Add heart rate reading"
+              aria-label="Log blood pressure reading"
             >
               <Plus className="w-5 h-5" />
-              <span>+ Add Heart Rate</span>
+              <span>Blood Pressure</span>
             </button>
           </div>
         </div>
@@ -276,7 +276,7 @@ export const WellnessView: React.FC = () => {
               { id: 'water', label: `💧 Water (${waterCount})` },
               { id: 'sleep', label: `🌙 Sleep (${sleepCount})` },
               { id: 'walk', label: `🚶 Walk (${walkCount})` },
-              { id: 'bpm', label: `💓 BPM (${bpmCount})` },
+              { id: 'bpm', label: `💓 Blood Pressure (${bpmCount})` },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -298,7 +298,7 @@ export const WellnessView: React.FC = () => {
           <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400">
             <p className="font-semibold text-base">No logged entries in this category yet.</p>
             <p className="text-xs text-slate-500 mt-1">
-              Click "+ Add Glass", "+ Rest", "+ Add Walk", or "+ Add Heart Rate" above to create an entry.
+              Click "Glass", "Rest", "Walk", or "Blood Pressure" above to create an entry.
             </p>
           </div>
         ) : (
