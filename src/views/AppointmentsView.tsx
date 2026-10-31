@@ -140,11 +140,10 @@ export const AppointmentsView: React.FC = () => {
               <div
                 key={apt.id}
                 onClick={() => setSelectedAptId(apt.id)}
-                className={`p-5 rounded-3xl border-2 cursor-pointer transition-all ${
-                  isSelected
+                className={`p-5 rounded-3xl border-2 cursor-pointer transition-all ${isSelected
                     ? 'bg-blue-50/80 border-blue-600 shadow-md ring-2 ring-blue-500/20'
                     : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
-                }`}
+                  }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -158,11 +157,10 @@ export const AppointmentsView: React.FC = () => {
                   </div>
 
                   <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase ${
-                      apt.visitType === 'in-person'
+                    className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase ${apt.visitType === 'in-person'
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-purple-100 text-purple-800'
-                    }`}
+                      }`}
                   >
                     {apt.visitType}
                   </span>
@@ -276,11 +274,10 @@ export const AppointmentsView: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => toggleChecklistItem(selectedApt.id, item.id)}
-                    className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${
-                      item.completed
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${item.completed
                         ? 'bg-emerald-50/60 border-emerald-300 text-slate-500'
                         : 'bg-white border-slate-200 hover:border-blue-400'
-                    }`}
+                      }`}
                   >
                     <div className="mt-0.5 shrink-0">
                       {item.completed ? (
@@ -291,13 +288,12 @@ export const AppointmentsView: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <span
-                        className={`text-[11px] uppercase font-extrabold px-1.5 py-0.5 rounded mr-2 ${
-                          item.category === 'question'
+                        className={`text-[11px] uppercase font-extrabold px-1.5 py-0.5 rounded mr-2 ${item.category === 'question'
                             ? 'bg-blue-100 text-blue-800'
                             : item.category === 'symptom'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-purple-100 text-purple-800'
-                        }`}
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-purple-100 text-purple-800'
+                          }`}
                       >
                         {item.category === 'question' ? 'Question' : item.category === 'symptom' ? 'Symptom' : 'Bring'}
                       </span>

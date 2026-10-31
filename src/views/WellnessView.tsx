@@ -4,7 +4,6 @@ import {
   Droplets,
   Moon,
   Heart,
-  Smile,
   Shield,
   CheckCircle2,
   ChevronDown,
@@ -12,73 +11,111 @@ import {
   Volume2,
   Sparkles,
   TrendingUp,
+  Plus,
+  Trash2,
+  Clock,
+  Filter,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
+import { AddRestModal } from '../components/AddRestModal';
+import { AddWalkModal } from '../components/AddWalkModal';
+import { AddBpmModal } from '../components/AddBpmModal';
+import { WellnessLogType } from '../types/health';
 
 export const WellnessView: React.FC = () => {
   const {
     todayWellness,
-    updateTodayWellness,
-    incrementWater,
-    decrementWater,
     wellnessData,
+    wellnessLogs,
+    addWaterGlass,
+    deleteWellnessLog,
     mobilityRoutines,
     toggleRoutine,
     speakText,
   } = useHealth();
 
   const [expandedRoutineId, setExpandedRoutineId] = useState<string | null>(null);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
+  const [isWalkModalOpen, setIsWalkModalOpen] = useState(false);
+  const [isBpmModalOpen, setIsBpmModalOpen] = useState(false);
+  const [logFilter, setLogFilter] = useState<'all' | WellnessLogType>('all');
+  const [lastWaterFeedback, setLastWaterFeedback] = useState<string | null>(null);
 
-  // Quick blood pressure input
-  const [systolic, setSystolic] = useState<number>(todayWellness.bloodPressure?.systolic || 124);
-  const [diastolic, setDiastolic] = useState<number>(todayWellness.bloodPressure?.diastolic || 78);
-  const [pulse, setPulse] = useState<number>(todayWellness.bloodPressure?.pulse || 68);
-  const [isEditingBP, setIsEditingBP] = useState(false);
-
-  const handleSaveBP = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateTodayWellness({
-      bloodPressure: {
-        systolic: Number(systolic),
-        diastolic: Number(diastolic),
-        pulse: Number(pulse),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    });
-    setIsEditingBP(false);
+  // Handle water glass logging
+  const handleAddWater = () => {
+    addWaterGlass();
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setLastWaterFeedback(`+1 Glass recorded at ${timeStr}`);
+    setTimeout(() => {
+      setLastWaterFeedback(null);
+    }, 4000);
   };
 
   const completedRoutinesCount = mobilityRoutines.filter((r) => r.completedToday).length;
 
+  // Filter wellness logs
+  const filteredLogs = wellnessLogs.filter((log) => {
+    if (logFilter === 'all') return true;
+    return log.type === logFilter;
+  });
+
+  // Calculate counts for filters
+  const waterCount = wellnessLogs.filter((l) => l.type === 'water').length;
+  const sleepCount = wellnessLogs.filter((l) => l.type === 'sleep').length;
+  const walkCount = wellnessLogs.filter((l) => l.type === 'walk').length;
+  const bpmCount = wellnessLogs.filter((l) => l.type === 'bpm').length;
+
+  // Latest BPM entry
+  const latestBpmEntry = wellnessLogs.find((l) => l.type === 'bpm');
+
+  // Format sleep duration display (hours and minutes)
+  const formatSleepDisplay = () => {
+    const totalHours = todayWellness.sleepHours || 0;
+    const wholeHours = Math.floor(totalHours);
+    const minutes = Math.round((totalHours - wholeHours) * 60);
+    if (minutes === 0) return `${wholeHours} hrs`;
+    return `${wholeHours} hrs ${minutes} mins`;
+  };
+
+  // Format walk duration display
+  const formatWalkDisplay = () => {
+    const totalMins = todayWellness.activityMinutes || 0;
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    if (hours === 0) return `${mins} mins`;
+    if (mins === 0) return `${hours} hrs`;
+    return `${hours} hr ${mins} mins`;
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-12">
-      {/* Title */}
+      {/* Title & Speech Readout */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Daily Wellness & Senior Mobility
           </h2>
           <p className="text-slate-600 text-sm sm:text-base mt-1">
-            Gentle tracking of hydration, restful sleep, daily steps, and physical therapist mobility routines.
+            Personalized tracking of water glasses, restful sleep, daily walks, and heart rate logs.
           </p>
         </div>
 
         <button
           onClick={() =>
             speakText(
-              `Today you have drunk ${todayWellness.waterGlasses} glasses of water. You slept ${todayWellness.sleepHours} hours. You completed ${completedRoutinesCount} of ${mobilityRoutines.length} mobility routines.`
+              `Today you have logged ${todayWellness.waterGlasses} glasses of water. You logged ${formatSleepDisplay()} of rest. You completed ${formatWalkDisplay()} of walking. You have ${completedRoutinesCount} of ${mobilityRoutines.length} mobility routines completed.`
             )
           }
           className="px-4 py-2.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold rounded-2xl flex items-center justify-center gap-2 text-sm sm:text-base transition-colors shrink-0"
         >
           <Volume2 className="w-5 h-5 text-teal-700" />
-          <span>Listen to Wellness Summary</span>
+          <span>Listen to Summary</span>
         </button>
       </div>
 
-      {/* Daily Vital Counters Grid */}
+      {/* Daily Vital Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Hydration Water Counter */}
+        {/* 1. Hydration Water Card (No counter - click adds to log every time!) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center">
@@ -94,67 +131,63 @@ export const WellnessView: React.FC = () => {
               {todayWellness.waterGlasses} <span className="text-base font-semibold text-slate-500">glasses</span>
             </h3>
             <p className="text-xs text-slate-600 font-medium mt-1">
-              Hydration supports kidney health and medication absorption.
+              {lastWaterFeedback ? (
+                <span className="text-emerald-700 font-bold animate-pulse">
+                  ✓ {lastWaterFeedback}
+                </span>
+              ) : (
+                'Every glass is tracked with its exact timestamp.'
+              )}
             </p>
           </div>
 
-          {/* Interactive buttons */}
-          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+          {/* "+ Add Glass" button (no '-' or '+' counters!) */}
+          <div className="pt-2 border-t border-slate-100">
             <button
-              onClick={decrementWater}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-lg transition-colors"
-              aria-label="Decrease water"
+              onClick={handleAddWater}
+              className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+              aria-label="Add glass of water to log"
             >
-              -
-            </button>
-            <button
-              onClick={incrementWater}
-              className="flex-1 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-lg shadow-sm transition-all active:scale-95"
-              aria-label="Add water"
-            >
-              + Add Glass
+              <Plus className="w-5 h-5" />
+              <span>+ Add Glass</span>
             </button>
           </div>
         </div>
 
-        {/* 2. Sleep Hours & Quality */}
+        {/* 2. Sleep / Rest Card (Click "+ Rest" to input hours & 0/15/30/45 minutes) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
               <Moon className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-full capitalize">
-              {todayWellness.sleepQuality}
+              {todayWellness.sleepQuality || 'Good'}
             </span>
           </div>
 
           <div>
             <h3 className="text-3xl font-extrabold text-slate-900">
-              {todayWellness.sleepHours} <span className="text-base font-semibold text-slate-500">hours</span>
+              {formatSleepDisplay()}
             </h3>
             <p className="text-xs text-slate-600 font-medium mt-1">
-              Quality sleep restores cognitive clarity and immune function.
+              Restful sleep restores energy and mental clarity.
             </p>
           </div>
 
-          {/* Quick Adjustment */}
-          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+          {/* "+ Rest" Button */}
+          <div className="pt-2 border-t border-slate-100">
             <button
-              onClick={() => updateTodayWellness({ sleepHours: Math.max(4, todayWellness.sleepHours - 0.5) })}
-              className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm"
+              onClick={() => setIsRestModalOpen(true)}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+              aria-label="Add rest or sleep to log"
             >
-              -30m
-            </button>
-            <button
-              onClick={() => updateTodayWellness({ sleepHours: Math.min(12, todayWellness.sleepHours + 0.5) })}
-              className="flex-1 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold rounded-xl text-sm"
-            >
-              +30m
+              <Plus className="w-5 h-5" />
+              <span>+ Rest</span>
             </button>
           </div>
         </div>
 
-        {/* 3. Gentle Movement / Activity */}
+        {/* 3. Walk Card (Click "+ Add Walk" to input hours & 5-min increments) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
@@ -167,104 +200,215 @@ export const WellnessView: React.FC = () => {
 
           <div>
             <h3 className="text-3xl font-extrabold text-slate-900">
-              {todayWellness.activityMinutes} <span className="text-base font-semibold text-slate-500">mins</span>
+              {formatWalkDisplay()}
             </h3>
             <p className="text-xs text-slate-600 font-medium mt-1 truncate">
-              {todayWellness.activityType}
+              {todayWellness.activityType || 'Gentle walking'}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+          {/* "+ Add Walk" Button */}
+          <div className="pt-2 border-t border-slate-100">
             <button
-              onClick={() => updateTodayWellness({ activityMinutes: todayWellness.activityMinutes + 10 })}
-              className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all"
+              onClick={() => setIsWalkModalOpen(true)}
+              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+              aria-label="Add walk to log"
             >
-              + 10 Mins Walk
+              <Plus className="w-5 h-5" />
+              <span>+ Add Walk</span>
             </button>
           </div>
         </div>
 
-        {/* 4. Blood Pressure Reading */}
+        {/* 4. Heart Rate / BPM Card (Click "+ Add Heart Rate" for multiple entries) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center">
               <Heart className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-full">
-              Optimal &lt; 130/80
+              {latestBpmEntry ? `${bpmCount} logged` : 'Optimal < 100'}
             </span>
           </div>
 
           <div>
             <h3 className="text-3xl font-extrabold text-slate-900">
-              {todayWellness.bloodPressure?.systolic || 124}/{todayWellness.bloodPressure?.diastolic || 78}
+              {latestBpmEntry?.bpm || todayWellness.bloodPressure?.pulse || 68} <span className="text-base font-semibold text-slate-500">BPM</span>
             </h3>
             <p className="text-xs text-slate-600 font-medium mt-1">
-              Pulse: {todayWellness.bloodPressure?.pulse || 68} bpm • Measured at {todayWellness.bloodPressure?.time || 'Morning'}
+              BP: {latestBpmEntry?.systolic || todayWellness.bloodPressure?.systolic || 124}/{latestBpmEntry?.diastolic || todayWellness.bloodPressure?.diastolic || 78} mmHg
             </p>
           </div>
 
+          {/* "+ Add Heart Rate" Button */}
           <div className="pt-2 border-t border-slate-100">
             <button
-              onClick={() => setIsEditingBP(!isEditingBP)}
-              className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm transition-colors"
+              onClick={() => setIsBpmModalOpen(true)}
+              className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+              aria-label="Add heart rate reading"
             >
-              {isEditingBP ? 'Close' : 'Update Reading'}
+              <Plus className="w-5 h-5" />
+              <span>+ Add Heart Rate</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Blood Pressure Input Drawer */}
-      {isEditingBP && (
-        <form onSubmit={handleSaveBP} className="bg-rose-50/70 border-2 border-rose-200 rounded-3xl p-6 space-y-4 animate-fade-in">
-          <h4 className="font-bold text-slate-900 text-base">Record Blood Pressure Measurement</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Systolic (Top number)</label>
-              <input
-                type="number"
-                value={systolic}
-                onChange={(e) => setSystolic(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-xl font-bold text-lg bg-white"
-              />
+      {/* 5. SEPARATE ACTIVITY & VITAL TIMELOG (All clicks logged separately with timestamp) */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-6 h-6 text-teal-600" />
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+                Activity & Vital Timestamp Log
+              </h3>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Diastolic (Bottom number)</label>
-              <input
-                type="number"
-                value={diastolic}
-                onChange={(e) => setDiastolic(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-xl font-bold text-lg bg-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Pulse (Heart rate)</label>
-              <input
-                type="number"
-                value={pulse}
-                onChange={(e) => setPulse(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-xl font-bold text-lg bg-white"
-              />
-            </div>
+            <p className="text-sm text-slate-600 font-medium mt-0.5">
+              Every glass of water, sleep session, walk, and heart rate check is individually recorded with its time.
+            </p>
           </div>
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsEditingBP(false)}
-              className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-sm"
-            >
-              Save Blood Pressure
-            </button>
+
+          {/* Quick Filter Tabs */}
+          <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-2xl">
+            {[
+              { id: 'all', label: `All (${wellnessLogs.length})` },
+              { id: 'water', label: `💧 Water (${waterCount})` },
+              { id: 'sleep', label: `🌙 Sleep (${sleepCount})` },
+              { id: 'walk', label: `🚶 Walk (${walkCount})` },
+              { id: 'bpm', label: `💓 BPM (${bpmCount})` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setLogFilter(tab.id as typeof logFilter)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  logFilter === tab.id
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </form>
-      )}
+        </div>
+
+        {/* Entries List */}
+        {filteredLogs.length === 0 ? (
+          <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400">
+            <p className="font-semibold text-base">No logged entries in this category yet.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Click "+ Add Glass", "+ Rest", "+ Add Walk", or "+ Add Heart Rate" above to create an entry.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredLogs.map((entry) => {
+              const isWater = entry.type === 'water';
+              const isSleep = entry.type === 'sleep';
+              const isWalk = entry.type === 'walk';
+              const isBpm = entry.type === 'bpm';
+
+              return (
+                <div
+                  key={entry.id}
+                  className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-teal-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                >
+                  <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                    {/* Category Icon Badge */}
+                    <div
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white font-bold shadow-xs ${
+                        isWater
+                          ? 'bg-sky-500'
+                          : isSleep
+                          ? 'bg-indigo-600'
+                          : isWalk
+                          ? 'bg-emerald-600'
+                          : 'bg-rose-500'
+                      }`}
+                    >
+                      {isWater && <Droplets className="w-5 h-5" />}
+                      {isSleep && <Moon className="w-5 h-5" />}
+                      {isWalk && <Activity className="w-5 h-5" />}
+                      {isBpm && <Heart className="w-5 h-5" />}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Title / Value */}
+                        <h4 className="text-base font-extrabold text-slate-900">
+                          {isWater && '1 Glass of Fresh Water (8 oz)'}
+                          {isSleep &&
+                            `${entry.hours}h ${entry.minutes}m Rest (${
+                              entry.quality || 'Good'
+                            })`}
+                          {isWalk &&
+                            `${entry.walkHours && entry.walkHours > 0 ? `${entry.walkHours}h ` : ''}${
+                              entry.walkMinutes
+                            } mins Walk - ${entry.walkType || 'Walk'}`}
+                          {isBpm &&
+                            `${entry.bpm} BPM Heart Rate${
+                              entry.systolic && entry.diastolic
+                                ? ` • BP ${entry.systolic}/${entry.diastolic} mmHg`
+                                : ''
+                            }`}
+                        </h4>
+
+                        {/* Tag */}
+                        <span
+                          className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isWater
+                              ? 'bg-sky-100 text-sky-800'
+                              : isSleep
+                              ? 'bg-indigo-100 text-indigo-800'
+                              : isWalk
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {entry.type}
+                        </span>
+                      </div>
+
+                      {/* Notes / Context */}
+                      {entry.notes && (
+                        <p className="text-xs text-slate-600 font-medium mt-0.5 truncate">
+                          {entry.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Time and Delete Button */}
+                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-slate-800 block">
+                        {entry.displayTime}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block font-medium">
+                        {entry.date}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this entry from your log?')) {
+                          deleteWellnessLog(entry.id);
+                        }
+                      }}
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                      title="Delete log entry"
+                      aria-label="Delete entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Senior Physical Therapy & Safe Mobility Routines */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
@@ -418,7 +562,11 @@ export const WellnessView: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Modals */}
+      <AddRestModal isOpen={isRestModalOpen} onClose={() => setIsRestModalOpen(false)} />
+      <AddWalkModal isOpen={isWalkModalOpen} onClose={() => setIsWalkModalOpen(false)} />
+      <AddBpmModal isOpen={isBpmModalOpen} onClose={() => setIsBpmModalOpen(false)} />
     </div>
   );
 };
-

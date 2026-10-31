@@ -257,11 +257,10 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl p-3.5 text-sm leading-relaxed shadow-xs ${
-                  isUser
+                className={`max-w-[85%] rounded-2xl p-3.5 text-sm leading-relaxed shadow-xs ${isUser
                     ? 'bg-teal-700 text-white rounded-br-none'
                     : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
-                }`}
+                  }`}
               >
                 <div className="whitespace-pre-wrap">{msg.text}</div>
 

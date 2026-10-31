@@ -61,9 +61,8 @@ export const DashboardView: React.FC = () => {
   const nextAppointment = appointments.find((a) => a.status === 'upcoming') || appointments[0];
 
   const handleReadDashboard = () => {
-    const text = `Hello ${profile.preferredName}. Today, you have taken ${takenDosesToday} of ${totalDosesToday} scheduled doses. ${
-      nextAppointment ? `Your next upcoming visit is with ${nextAppointment.providerName} on ${nextAppointment.date} at ${nextAppointment.time}.` : ''
-    } You have drunk ${todayWellness.waterGlasses} glasses of water today.`;
+    const text = `Hello ${profile.preferredName}. Today, you have taken ${takenDosesToday} of ${totalDosesToday} scheduled doses. ${nextAppointment ? `Your next upcoming visit is with ${nextAppointment.providerName} on ${nextAppointment.date} at ${nextAppointment.time}.` : ''
+      } You have drunk ${todayWellness.waterGlasses} glasses of water today.`;
     speakText(text);
   };
 
@@ -183,13 +182,12 @@ export const DashboardView: React.FC = () => {
                 return (
                   <div
                     key={log.id}
-                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isTaken
+                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isTaken
                         ? 'bg-emerald-50/60 border-emerald-300 text-slate-800'
                         : isSkipped
-                        ? 'bg-slate-50 border-slate-200 text-slate-400 opacity-70'
-                        : 'bg-white border-slate-200 hover:border-teal-300 shadow-xs'
-                    }`}
+                          ? 'bg-slate-50 border-slate-200 text-slate-400 opacity-70'
+                          : 'bg-white border-slate-200 hover:border-teal-300 shadow-xs'
+                      }`}
                   >
                     <div className="flex items-start gap-3 min-w-0 flex-1">
                       {/* Pill Shape / Color Badge */}

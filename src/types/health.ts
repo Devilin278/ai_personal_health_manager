@@ -106,6 +106,29 @@ export interface WellnessData {
   weightLbs?: number;
 }
 
+export type WellnessLogType = 'water' | 'sleep' | 'walk' | 'bpm';
+
+export interface WellnessLogEntry {
+  id: string;
+  type: WellnessLogType;
+  date: string;
+  displayTime: string;
+  timestamp: number;
+  glasses?: number;
+  hours?: number;
+  minutes?: number;
+  totalMinutes?: number;
+  quality?: 'great' | 'good' | 'fair' | 'poor';
+  walkHours?: number;
+  walkMinutes?: number;
+  totalWalkMinutes?: number;
+  walkType?: string;
+  bpm?: number;
+  systolic?: number;
+  diastolic?: number;
+  notes?: string;
+}
+
 export interface MobilityRoutine {
   id: string;
   title: string;

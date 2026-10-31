@@ -8,6 +8,7 @@ import {
   MobilityRoutine,
   DoseLog,
   DoseStatus,
+  WellnessLogEntry,
 } from '../types/health';
 import { generateHealthReportDocx } from '../utils/docxExport';
 import { generateHealthReportPdf } from '../utils/pdfExport';
@@ -19,6 +20,7 @@ import {
   initialHealthRecords,
   initialWellnessData,
   initialMobilityRoutines,
+  initialWellnessLogs,
   getTodayDateString,
 } from '../data/mockData';
 
@@ -52,6 +54,12 @@ interface HealthContextType {
   updateTodayWellness: (updates: Partial<WellnessData>) => void;
   incrementWater: () => void;
   decrementWater: () => void;
+  wellnessLogs: WellnessLogEntry[];
+  addWaterGlass: (notes?: string) => void;
+  addSleepLog: (hours: number, minutes: number, quality?: 'great' | 'good' | 'fair' | 'poor', notes?: string) => void;
+  addWalkLog: (walkHours: number, walkMinutes: number, walkType?: string, notes?: string) => void;
+  addBpmLog: (bpm: number, systolic?: number, diastolic?: number, notes?: string) => void;
+  deleteWellnessLog: (id: string) => void;
   
   mobilityRoutines: MobilityRoutine[];
   toggleRoutine: (id: string) => void;
@@ -99,6 +107,7 @@ const STORAGE_KEYS = {
   APPOINTMENTS: 'carecompanion_appointments',
   RECORDS: 'carecompanion_records',
   WELLNESS: 'carecompanion_wellness',
+  WELLNESS_LOGS: 'carecompanion_wellness_logs',
   ROUTINES: 'carecompanion_routines',
   FONT_SIZE: 'carecompanion_font_size',
   HIGH_CONTRAST: 'carecompanion_high_contrast',
@@ -140,6 +149,12 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [wellnessData, setWellnessData] = useState<WellnessData[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.WELLNESS);
     return saved ? JSON.parse(saved) : initialWellnessData;
+  });
+
+  // Individual Wellness Logs
+  const [wellnessLogs, setWellnessLogs] = useState<WellnessLogEntry[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.WELLNESS_LOGS);
+    return saved ? JSON.parse(saved) : initialWellnessLogs;
   });
 
   // Mobility Routines
@@ -219,6 +234,10 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.WELLNESS, JSON.stringify(wellnessData));
   }, [wellnessData]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.WELLNESS_LOGS, JSON.stringify(wellnessLogs));
+  }, [wellnessLogs]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ROUTINES, JSON.stringify(mobilityRoutines));
@@ -556,17 +575,146 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  const addWaterGlass = (notes?: string) => {
+    const now = new Date();
+    const displayTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newEntry: WellnessLogEntry = {
+      id: `wlog-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      type: 'water',
+      date: getTodayDateString(),
+      displayTime,
+      timestamp: Date.now(),
+      glasses: 1,
+      notes: notes || '1 glass of fresh water (8 oz)',
+    };
+    setWellnessLogs((prev) => [newEntry, ...prev]);
+    updateTodayWellness({ waterGlasses: (todayWellness.waterGlasses || 0) + 1 });
+  };
+
   const incrementWater = () => {
-    const current = todayWellness.waterGlasses;
-    if (current < 16) {
-      updateTodayWellness({ waterGlasses: current + 1 });
-    }
+    addWaterGlass();
   };
 
   const decrementWater = () => {
     const current = todayWellness.waterGlasses;
     if (current > 0) {
       updateTodayWellness({ waterGlasses: current - 1 });
+      // Remove latest water log of today if any
+      const todayWaterLog = wellnessLogs.find((l) => l.date === todayStr && l.type === 'water');
+      if (todayWaterLog) {
+        setWellnessLogs((prev) => prev.filter((l) => l.id !== todayWaterLog.id));
+      }
+    }
+  };
+
+  const addSleepLog = (
+    hours: number,
+    minutes: number,
+    quality: 'great' | 'good' | 'fair' | 'poor' = 'good',
+    notes?: string
+  ) => {
+    const now = new Date();
+    const displayTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const totalMinutes = hours * 60 + minutes;
+    const newEntry: WellnessLogEntry = {
+      id: `wlog-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      type: 'sleep',
+      date: getTodayDateString(),
+      displayTime,
+      timestamp: Date.now(),
+      hours,
+      minutes,
+      totalMinutes,
+      quality,
+      notes: notes || `${hours}h ${minutes}m rest (${quality})`,
+    };
+    setWellnessLogs((prev) => [newEntry, ...prev]);
+    const addedHours = Number((hours + minutes / 60).toFixed(1));
+    updateTodayWellness({
+      sleepHours: Number(((todayWellness.sleepHours || 0) + addedHours).toFixed(1)),
+      sleepQuality: quality,
+    });
+  };
+
+  const addWalkLog = (
+    walkHours: number,
+    walkMinutes: number,
+    walkType: string = 'Walk',
+    notes?: string
+  ) => {
+    const now = new Date();
+    const displayTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const totalWalkMinutes = walkHours * 60 + walkMinutes;
+    const newEntry: WellnessLogEntry = {
+      id: `wlog-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      type: 'walk',
+      date: getTodayDateString(),
+      displayTime,
+      timestamp: Date.now(),
+      walkHours,
+      walkMinutes,
+      totalWalkMinutes,
+      walkType,
+      notes: notes || `${walkHours > 0 ? `${walkHours}h ` : ''}${walkMinutes}m ${walkType}`,
+    };
+    setWellnessLogs((prev) => [newEntry, ...prev]);
+    updateTodayWellness({
+      activityMinutes: (todayWellness.activityMinutes || 0) + totalWalkMinutes,
+      activityType: walkType,
+    });
+  };
+
+  const addBpmLog = (
+    bpm: number,
+    systolic?: number,
+    diastolic?: number,
+    notes?: string
+  ) => {
+    const now = new Date();
+    const displayTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newEntry: WellnessLogEntry = {
+      id: `wlog-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      type: 'bpm',
+      date: getTodayDateString(),
+      displayTime,
+      timestamp: Date.now(),
+      bpm,
+      systolic,
+      diastolic,
+      notes: notes || `${bpm} BPM${systolic && diastolic ? ` (${systolic}/${diastolic} mmHg)` : ''}`,
+    };
+    setWellnessLogs((prev) => [newEntry, ...prev]);
+    updateTodayWellness({
+      bloodPressure: {
+        systolic: systolic || todayWellness.bloodPressure?.systolic || 124,
+        diastolic: diastolic || todayWellness.bloodPressure?.diastolic || 78,
+        pulse: bpm,
+        time: displayTime,
+      },
+    });
+  };
+
+  const deleteWellnessLog = (id: string) => {
+    const entry = wellnessLogs.find((l) => l.id === id);
+    if (!entry) return;
+    setWellnessLogs((prev) => prev.filter((l) => l.id !== id));
+    if (entry.date === todayStr) {
+      if (entry.type === 'water') {
+        updateTodayWellness({
+          waterGlasses: Math.max(0, (todayWellness.waterGlasses || 0) - (entry.glasses || 1)),
+        });
+      } else if (entry.type === 'walk' && entry.totalWalkMinutes) {
+        updateTodayWellness({
+          activityMinutes: Math.max(0, (todayWellness.activityMinutes || 0) - entry.totalWalkMinutes),
+        });
+      } else if (entry.type === 'sleep' && entry.totalMinutes) {
+        updateTodayWellness({
+          sleepHours: Math.max(
+            0,
+            Number(((todayWellness.sleepHours || 0) - entry.totalMinutes / 60).toFixed(1))
+          ),
+        });
+      }
     }
   };
 
@@ -585,6 +733,7 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setAppointments(initialAppointments);
     setHealthRecords(initialHealthRecords);
     setWellnessData(initialWellnessData);
+    setWellnessLogs(initialWellnessLogs);
     setMobilityRoutines(initialMobilityRoutines);
     localStorage.clear();
     setActiveNotification({
@@ -666,6 +815,12 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateTodayWellness,
         incrementWater,
         decrementWater,
+        wellnessLogs,
+        addWaterGlass,
+        addSleepLog,
+        addWalkLog,
+        addBpmLog,
+        deleteWellnessLog,
         mobilityRoutines,
         toggleRoutine,
         fontSize,
