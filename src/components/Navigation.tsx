@@ -6,7 +6,6 @@ import {
   CalendarDays,
   Activity,
   FileText,
-  BotMessageSquare,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 
@@ -62,12 +61,6 @@ export const Navigation: React.FC = () => {
       label: 'Health Records & Summary',
       shortLabel: 'Records',
       icon: FileText,
-    },
-    {
-      id: 'assistant',
-      label: 'AI Health Companion',
-      shortLabel: 'AI Assistant',
-      icon: BotMessageSquare,
     },
   ];
 

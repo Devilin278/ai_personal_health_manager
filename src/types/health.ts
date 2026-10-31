@@ -119,6 +119,16 @@ export interface MobilityRoutine {
   icon: string;
 }
 
+export interface CaregiverInfo {
+  name: string;
+  relationship: string;
+  phone: string;
+  email: string;
+  alertDelayHours: number; // e.g. 2 hours
+  notifyOnMissedMedication: boolean;
+  notifyOnMissedAppointment: boolean;
+}
+
 export interface UserProfile {
   name: string;
   preferredName: string;
@@ -146,6 +156,7 @@ export interface UserProfile {
   };
   chronicConditions: string[];
   allergies: { allergen: string; reaction: string; severity: 'mild' | 'moderate' | 'severe' }[];
+  caregiver?: CaregiverInfo | null;
   caregiverNotificationsEnabled: boolean;
   caregiverContact?: string;
   accessibility: {

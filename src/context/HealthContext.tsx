@@ -74,6 +74,14 @@ interface HealthContextType {
   activeNotification: { title: string; message: string; type: 'reminder' | 'success' | 'info' | 'warning' } | null;
   dismissNotification: () => void;
   triggerSampleReminder: (medName: string, time: string) => void;
+
+  // Floating AI Assistant
+  isAiChatOpen: boolean;
+  openAiChat: (initialPrompt?: string) => void;
+  closeAiChat: () => void;
+  toggleAiChat: () => void;
+  pendingAiPrompt: string | null;
+  clearPendingAiPrompt: () => void;
   
   // Data backup & export
   resetToSampleData: () => void;
@@ -163,6 +171,29 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     message: string;
     type: 'reminder' | 'success' | 'info' | 'warning';
   } | null>(null);
+
+  // Floating AI chat state
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [pendingAiPrompt, setPendingAiPrompt] = useState<string | null>(null);
+
+  const openAiChat = (initialPrompt?: string) => {
+    if (initialPrompt) {
+      setPendingAiPrompt(initialPrompt);
+    }
+    setIsAiChatOpen(true);
+  };
+
+  const closeAiChat = () => {
+    setIsAiChatOpen(false);
+  };
+
+  const toggleAiChat = () => {
+    setIsAiChatOpen((prev) => !prev);
+  };
+
+  const clearPendingAiPrompt = () => {
+    setPendingAiPrompt(null);
+  };
 
   // Sync state to local storage
   useEffect(() => {
@@ -652,6 +683,12 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         activeNotification,
         dismissNotification,
         triggerSampleReminder,
+        isAiChatOpen,
+        openAiChat,
+        closeAiChat,
+        toggleAiChat,
+        pendingAiPrompt,
+        clearPendingAiPrompt,
         resetToSampleData,
         exportAllData,
         exportPdfReport,

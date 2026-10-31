@@ -34,6 +34,15 @@ export const initialProfile: UserProfile = {
     { allergen: 'Penicillin', reaction: 'Skin hives & difficulty breathing', severity: 'severe' },
     { allergen: 'Sulfa Drugs', reaction: 'Mild itching and skin rash', severity: 'moderate' },
   ],
+  caregiver: {
+    name: 'Sarah Jenkins',
+    relationship: 'Daughter',
+    phone: '(555) 234-8910',
+    email: 'sarah.jenkins@example.com',
+    alertDelayHours: 2,
+    notifyOnMissedMedication: true,
+    notifyOnMissedAppointment: true,
+  },
   caregiverNotificationsEnabled: true,
   caregiverContact: 'Sarah Jenkins (sarah.jenkins@example.com)',
   accessibility: {

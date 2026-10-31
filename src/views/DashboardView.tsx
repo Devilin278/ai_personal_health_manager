@@ -31,6 +31,7 @@ export const DashboardView: React.FC = () => {
     incrementWater,
     decrementWater,
     setActiveTab,
+    openAiChat,
     speakText,
     triggerSampleReminder,
   } = useHealth();
@@ -264,7 +265,7 @@ export const DashboardView: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => setActiveTab('assistant')}
+              onClick={() => openAiChat('Prepare questions for my doctor')}
               className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs sm:text-sm shrink-0 shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Sparkles className="w-4 h-4" />

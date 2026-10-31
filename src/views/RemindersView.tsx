@@ -11,8 +11,15 @@ import {
   Smartphone,
   Pill,
   Sparkles,
+  HeartHandshake,
+  UserPlus,
+  Settings,
+  Trash2,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
+import { CaregiverModal } from '../components/CaregiverModal';
 
 export const RemindersView: React.FC = () => {
   const {
@@ -28,6 +35,7 @@ export const RemindersView: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'all' | 'medication' | 'supplement'>('all');
   const [snoozeInterval, setSnoozeInterval] = useState<'15' | '30' | '60'>('15');
+  const [isCaregiverModalOpen, setIsCaregiverModalOpen] = useState(false);
 
   // Group doses into time slots:
   // Morning (before 11am), Midday (11am-3pm), Evening (3pm-8pm), Bedtime (8pm onwards)
@@ -252,42 +260,148 @@ export const RemindersView: React.FC = () => {
       </div>
 
       {/* Optional Caregiver Notification Setting */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
-        <div className="flex items-center gap-3">
-          <Smartphone className="w-6 h-6 text-teal-600" />
-          <h3 className="text-xl font-bold text-slate-900">
-            Caregiver Peace of Mind Notifications (Optional)
-          </h3>
-        </div>
-        <p className="text-sm text-slate-600">
-          With your permission, CareCompanion can send a gentle alert to a trusted family member or caregiver if an essential morning or evening medication has not been marked as taken after 2 hours.
-        </p>
-
-        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="font-bold text-slate-900 block text-base">
-              Send alerts to: {profile.caregiverContact || 'Sarah Jenkins (sarah.jenkins@example.com)'}
-            </span>
-            <span className="text-xs text-slate-500 font-medium">
-              Status: {profile.caregiverNotificationsEnabled ? 'Active (Enabled with your consent)' : 'Disabled'}
-            </span>
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
+              <HeartHandshake className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
+                Caregiver Peace of Mind Notifications
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Automated check-ins for loved ones if an essential medication or appointment is missed.
+              </p>
+            </div>
           </div>
 
-          <button
-            onClick={() => {
-              const nextState = !profile.caregiverNotificationsEnabled;
-              updateProfile({ caregiverNotificationsEnabled: nextState });
-            }}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${
-              profile.caregiverNotificationsEnabled
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-200 text-slate-800'
-            }`}
-          >
-            {profile.caregiverNotificationsEnabled ? '✓ Alerts Active' : 'Enable Alerts'}
-          </button>
+          {profile.caregiver ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsCaregiverModalOpen(true)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm flex items-center gap-2 transition-colors"
+              >
+                <Settings className="w-4 h-4 text-slate-600" />
+                <span>Edit Caregiver</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm('Remove caregiver and disable caregiver notifications?')) {
+                    updateProfile({
+                      caregiver: null,
+                      caregiverNotificationsEnabled: false,
+                      caregiverContact: undefined,
+                    });
+                  }
+                }}
+                className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors"
+                title="Remove Caregiver"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsCaregiverModalOpen(true)}
+              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Caregiver Contact</span>
+            </button>
+          )}
         </div>
+
+        {profile.caregiver ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h4 className="text-lg font-extrabold text-slate-900">
+                    {profile.caregiver.name}
+                  </h4>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
+                    {profile.caregiver.relationship}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-xs sm:text-sm text-slate-600">
+                  {profile.caregiver.phone && (
+                    <a
+                      href={`tel:${profile.caregiver.phone}`}
+                      className="flex items-center gap-1.5 font-semibold text-teal-800 hover:underline"
+                    >
+                      <Phone className="w-4 h-4 text-teal-600" />
+                      <span>{profile.caregiver.phone}</span>
+                    </a>
+                  )}
+                  {profile.caregiver.email && (
+                    <a
+                      href={`mailto:${profile.caregiver.email}`}
+                      className="flex items-center gap-1.5 font-semibold text-teal-800 hover:underline"
+                    >
+                      <Mail className="w-4 h-4 text-teal-600" />
+                      <span>{profile.caregiver.email}</span>
+                    </a>
+                  )}
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-600 mt-3 font-medium">
+                  ⏰ Alerts are scheduled <strong>{profile.caregiver.alertDelayHours || 2} hours</strong> after an unconfirmed dose.
+                  {profile.caregiver.notifyOnMissedMedication && ' • Missed doses'}
+                  {profile.caregiver.notifyOnMissedAppointment && ' • Doctor visits'}
+                </p>
+              </div>
+
+              {/* Status and Toggle */}
+              <div className="flex flex-col sm:items-end gap-2 shrink-0">
+                <span className="text-xs font-bold text-slate-500">
+                  Notification Status:
+                </span>
+                <button
+                  onClick={() => {
+                    const next = !profile.caregiverNotificationsEnabled;
+                    updateProfile({ caregiverNotificationsEnabled: next });
+                  }}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-xs flex items-center gap-2 ${
+                    profile.caregiverNotificationsEnabled
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{profile.caregiverNotificationsEnabled ? '✓ Alerts Active' : 'Alerts Paused'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-3">
+            <HeartHandshake className="w-10 h-10 text-slate-400 mx-auto" />
+            <div>
+              <p className="font-bold text-slate-800 text-base">
+                No Caregiver Contact Configured
+              </p>
+              <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1">
+                You can add a child, spouse, or professional caregiver who will receive a gentle notification only if an essential medication or doctor visit is marked overdue.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsCaregiverModalOpen(true)}
+              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl text-sm inline-flex items-center gap-2 shadow-sm transition-all active:scale-95"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Caregiver Contact</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Caregiver Add / Edit Modal */}
+      <CaregiverModal
+        isOpen={isCaregiverModalOpen}
+        onClose={() => setIsCaregiverModalOpen(false)}
+      />
     </div>
   );
 };

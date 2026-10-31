@@ -30,6 +30,7 @@ export const AppointmentsView: React.FC = () => {
     deleteAppointment,
     speakText,
     setActiveTab,
+    openAiChat,
   } = useHealth();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -263,7 +264,7 @@ export const AppointmentsView: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setActiveTab('assistant')}
+                  onClick={() => openAiChat(`Prepare questions for my upcoming appointment with ${selectedApt.providerName}`)}
                   className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
                 >
                   <Sparkles className="w-3.5 h-3.5" /> Generate Questions

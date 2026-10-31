@@ -9,8 +9,8 @@ import { RemindersView } from './views/RemindersView';
 import { AppointmentsView } from './views/AppointmentsView';
 import { WellnessView } from './views/WellnessView';
 import { RecordsView } from './views/RecordsView';
-import { AssistantView } from './views/AssistantView';
 import { SimpleDashboardView } from './views/SimpleDashboardView';
+import { FloatingAiAssistant } from './components/FloatingAiAssistant';
 import { Heart, ShieldAlert, Phone, HelpCircle } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -49,10 +49,12 @@ const AppContent: React.FC = () => {
             {activeTab === 'appointments' && <AppointmentsView />}
             {activeTab === 'wellness' && <WellnessView />}
             {activeTab === 'records' && <RecordsView />}
-            {activeTab === 'assistant' && <AssistantView />}
           </>
         )}
       </main>
+
+      {/* Floating AI Assistant Chat Box (Available across all views) */}
+      <FloatingAiAssistant />
 
       {/* Accessible Footer with Safety Disclaimer */}
       <footer className="mt-auto border-t border-slate-200 bg-white py-8 text-center text-xs sm:text-sm text-slate-500 transition-colors">
