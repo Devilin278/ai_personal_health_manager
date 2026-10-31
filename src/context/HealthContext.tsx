@@ -9,6 +9,7 @@ import {
   DoseLog,
   DoseStatus,
 } from '../types/health';
+import { generateHealthReportDocx } from '../utils/docxExport';
 import {
   initialProfile,
   initialMedications,
@@ -73,9 +74,10 @@ interface HealthContextType {
   dismissNotification: () => void;
   triggerSampleReminder: (medName: string, time: string) => void;
   
-  // Data backup & reset
+  // Data backup & export
   resetToSampleData: () => void;
   exportAllData: () => void;
+  exportDocxReport: () => Promise<void>;
 }
 
 const HealthContext = createContext<HealthContextType | undefined>(undefined);
@@ -559,24 +561,29 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  const exportDocxReport = async () => {
+    try {
+      await generateHealthReportDocx({
+        profile,
+        medications,
+        appointments,
+        healthRecords,
+        wellnessData,
+      });
+      setActiveNotification({
+        title: 'Word Document (.docx) Downloaded',
+        message: 'Your personal Medicine List, Doctors List, and Health Records have been saved to your downloads folder.',
+        type: 'success',
+      });
+    } catch (err) {
+      console.error('Error generating docx:', err);
+      alert('Could not generate Word document: ' + err);
+    }
+  };
+
   const exportAllData = () => {
-    const bundle = {
-      exportedAt: new Date().toISOString(),
-      profile,
-      medications,
-      doseLogs,
-      appointments,
-      healthRecords,
-      wellnessData,
-      mobilityRoutines,
-    };
-    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(bundle, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', jsonStr);
-    downloadAnchor.setAttribute('download', `My_Health_Records_${getTodayDateString()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    // Generates formatted Word document version of Medicine, Doctors, and Records
+    exportDocxReport();
   };
 
   return (
@@ -625,6 +632,7 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         triggerSampleReminder,
         resetToSampleData,
         exportAllData,
+        exportDocxReport,
       }}
     >
       {children}

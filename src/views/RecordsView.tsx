@@ -95,10 +95,11 @@ export const RecordsView: React.FC = () => {
         </div>
         <button
           onClick={exportAllData}
-          className="text-xs font-bold text-teal-900 bg-white hover:bg-teal-100 border border-teal-300 px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5"
+          className="text-xs font-bold text-teal-900 bg-white hover:bg-teal-100 border border-teal-300 px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
+          title="Download Word Document (.docx)"
         >
-          <Download className="w-3.5 h-3.5" />
-          <span>Export All Data (JSON)</span>
+          <Download className="w-3.5 h-3.5 text-teal-700" />
+          <span>Download Health Summary (.docx)</span>
         </button>
       </div>
 

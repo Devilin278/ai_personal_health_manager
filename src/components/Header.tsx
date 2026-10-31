@@ -5,7 +5,6 @@ import {
   VolumeX,
   ShieldAlert,
   Type,
-  SunMoon,
   Sparkles,
   Download,
   RotateCcw,
@@ -17,8 +16,6 @@ export const Header: React.FC = () => {
   const {
     fontSize,
     setFontSize,
-    highContrast,
-    toggleHighContrast,
     simpleMode,
     toggleSimpleMode,
     isSpeaking,
@@ -122,21 +119,6 @@ export const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* High Contrast Toggle */}
-          <button
-            onClick={toggleHighContrast}
-            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border flex items-center gap-1.5 transition-colors shrink-0 ${
-              highContrast
-                ? 'bg-black text-yellow-300 border-black font-bold'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-            title="Toggle high contrast mode"
-          >
-            <SunMoon className="w-4 h-4" />
-            <span className="hidden sm:inline">High Contrast</span>
-            <span className="sm:hidden">Contrast</span>
-          </button>
-
           {/* Simple Mode Toggle */}
           <button
             onClick={toggleSimpleMode}
@@ -151,15 +133,15 @@ export const Header: React.FC = () => {
             <span>{simpleMode ? 'Standard View' : 'Simple View'}</span>
           </button>
 
-          {/* Export & Reset Actions */}
-          <div className="flex items-center gap-1 pl-1 border-l border-slate-200 shrink-0">
+          {/* Download Word Docx Report & Reset */}
+          <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200 shrink-0">
             <button
               onClick={exportAllData}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Export all health data (JSON)"
-              aria-label="Export all health data"
+              className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-300 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              title="Download Medicine List, Doctors list, and records as a Word Document (.docx)"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-teal-700" />
+              <span>Download .docx</span>
             </button>
             <button
               onClick={() => {
@@ -167,7 +149,7 @@ export const Header: React.FC = () => {
                   resetToSampleData();
                 }
               }}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
               title="Reset to sample data"
               aria-label="Reset to sample data"
             >
