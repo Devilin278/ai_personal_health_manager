@@ -133,15 +133,15 @@ export const Header: React.FC = () => {
             <span>{simpleMode ? 'Standard View' : 'Simple View'}</span>
           </button>
 
-          {/* Download Word Docx Report & Reset */}
+          {/* Download PDF Health Report & Reset */}
           <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200 shrink-0">
             <button
               onClick={exportAllData}
               className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-300 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition-colors"
-              title="Download Medicine List, Doctors list, and records as a Word Document (.docx)"
+              title="Download Medicine List, Allergies, and Doctors as a PDF document"
             >
               <Download className="w-4 h-4 text-teal-700" />
-              <span>Download .docx</span>
+              <span>Download PDF</span>
             </button>
             <button
               onClick={() => {

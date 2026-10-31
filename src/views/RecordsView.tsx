@@ -96,10 +96,10 @@ export const RecordsView: React.FC = () => {
         <button
           onClick={exportAllData}
           className="text-xs font-bold text-teal-900 bg-white hover:bg-teal-100 border border-teal-300 px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
-          title="Download Word Document (.docx)"
+          title="Download PDF Health Summary (.pdf)"
         >
           <Download className="w-3.5 h-3.5 text-teal-700" />
-          <span>Download Health Summary (.docx)</span>
+          <span>Download Health Summary (PDF)</span>
         </button>
       </div>
 

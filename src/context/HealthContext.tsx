@@ -10,6 +10,7 @@ import {
   DoseStatus,
 } from '../types/health';
 import { generateHealthReportDocx } from '../utils/docxExport';
+import { generateHealthReportPdf } from '../utils/pdfExport';
 import {
   initialProfile,
   initialMedications,
@@ -77,6 +78,7 @@ interface HealthContextType {
   // Data backup & export
   resetToSampleData: () => void;
   exportAllData: () => void;
+  exportPdfReport: () => void;
   exportDocxReport: () => Promise<void>;
 }
 
@@ -561,6 +563,26 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  const exportPdfReport = () => {
+    try {
+      generateHealthReportPdf({
+        profile,
+        medications,
+        appointments,
+        healthRecords,
+        wellnessData,
+      });
+      setActiveNotification({
+        title: 'PDF Summary Document Downloaded',
+        message: 'Your personal Medicine List, Allergies, and Doctors report (.pdf) has been downloaded.',
+        type: 'success',
+      });
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Could not generate PDF document: ' + err);
+    }
+  };
+
   const exportDocxReport = async () => {
     try {
       await generateHealthReportDocx({
@@ -582,8 +604,8 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const exportAllData = () => {
-    // Generates formatted Word document version of Medicine, Doctors, and Records
-    exportDocxReport();
+    // Generates formatted PDF version with Medications first, Allergies second, and Doctors lastly
+    exportPdfReport();
   };
 
   return (
@@ -632,6 +654,7 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         triggerSampleReminder,
         resetToSampleData,
         exportAllData,
+        exportPdfReport,
         exportDocxReport,
       }}
     >
