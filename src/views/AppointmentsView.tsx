@@ -267,7 +267,7 @@ export const AppointmentsView: React.FC = () => {
                   onClick={() => openAiChat(`Prepare questions for my upcoming appointment with ${selectedApt.providerName}`)}
                   className="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Generate Questions
+                  <Sparkles className="w-3.5 h-3.5" /> Ask Scott to Prep Questions
                 </button>
               </div>
 

@@ -284,7 +284,7 @@ export const DashboardView: React.FC = () => {
               className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs sm:text-sm shrink-0 shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Ask AI Helper</span>
+              <span>Ask Scott (AI Assistant)</span>
             </button>
           </div>
         </div>

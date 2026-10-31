@@ -42,7 +42,7 @@ export const FloatingAiAssistant: React.FC = () => {
     {
       id: 'msg-welcome-1',
       sender: 'assistant',
-      text: `Hello ${profile.preferredName}! I am your CareCompanion Health Information Assistant. I can help translate medical test jargon into plain language, prepare thoughtful questions for doctor appointments, and explain general health terms.`,
+      text: `Hello ${profile.preferredName}! I'm Scott, your Care Companion Health Information Assistant. I can help translate medical test jargon into plain language, prepare thoughtful questions for doctor appointments, and explain general health terms.`,
       time: 'Just now',
     },
     {
@@ -164,7 +164,7 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
         <button
           onClick={() => openAiChat()}
           className="group flex items-center gap-3 px-4 sm:px-5 py-3.5 bg-gradient-to-r from-teal-700 to-teal-800 hover:from-teal-800 hover:to-teal-900 text-white font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-95 border-2 border-teal-500/40"
-          aria-label="Open AI Health Assistant"
+          aria-label="Open Scott (AI Assistant)"
         >
           <div className="relative">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -173,10 +173,10 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-teal-800" />
           </div>
           <div className="text-left hidden sm:block">
-            <span className="text-sm font-extrabold block leading-tight">AI Health Assistant</span>
+            <span className="text-sm font-extrabold block leading-tight">Scott (AI Assistant)</span>
             <span className="text-[11px] text-teal-200 font-medium block">Ask questions & prep visits</span>
           </div>
-          <span className="text-sm font-bold sm:hidden">Ask AI</span>
+          <span className="text-sm font-bold sm:hidden">Scott</span>
         </button>
       </div>
     );
@@ -187,7 +187,7 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
     <div
       className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[440px] md:w-[460px] h-[580px] max-h-[85vh] bg-white rounded-3xl shadow-2xl border-2 border-slate-300 flex flex-col overflow-hidden animate-fade-in text-slate-900"
       role="dialog"
-      aria-label="AI Health Information Assistant Chat"
+      aria-label="Scott (AI Assistant) Health Information Chat"
     >
       {/* Header with Title and Minimize / Close */}
       <div className="bg-gradient-to-r from-teal-700 to-teal-800 text-white px-5 py-3.5 flex items-center justify-between shrink-0 shadow-sm">
@@ -198,14 +198,14 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-base tracking-tight leading-tight">
-                AI Health Companion
+                Scott (AI Assistant)
               </h3>
               <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 border border-emerald-400/30">
                 Educational
               </span>
             </div>
             <p className="text-[11px] text-teal-100">
-              Plain-language explanations & visit prep
+              Care Companion Health Information Assistant
             </p>
           </div>
         </div>
@@ -307,7 +307,7 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
         {isTyping && (
           <div className="flex items-center gap-2 p-3 bg-white rounded-2xl border border-slate-200 max-w-[60%] text-slate-500 text-xs shadow-xs">
             <Sparkles className="w-4 h-4 text-teal-600 animate-spin" />
-            <span>AI Assistant is writing...</span>
+            <span>Scott is writing...</span>
           </div>
         )}
 
@@ -326,7 +326,7 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
           type="text"
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
-          placeholder="Ask a health question or topic..."
+          placeholder="Ask Scott a health question or topic..."
           className="flex-1 px-4 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white text-slate-900 placeholder:text-slate-400 font-medium"
         />
         <button
