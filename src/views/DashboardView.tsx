@@ -19,12 +19,15 @@ import {
   Pencil,
   Phone,
   User,
+  HeartHandshake,
+  Mail,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { PrintableSummaryModal } from '../components/PrintableSummaryModal';
 import { AddMedicationModal } from '../components/AddMedicationModal';
 import { AddAppointmentModal } from '../components/AddAppointmentModal';
 import { EditEmergencyContactModal } from '../components/EditEmergencyContactModal';
+import { CaregiverModal } from '../components/CaregiverModal';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -46,6 +49,7 @@ export const DashboardView: React.FC = () => {
   const [isAddMedOpen, setIsAddMedOpen] = useState(false);
   const [isAddAptOpen, setIsAddAptOpen] = useState(false);
   const [isEditEmergencyOpen, setIsEditEmergencyOpen] = useState(false);
+  const [isCaregiverModalOpen, setIsCaregiverModalOpen] = useState(false);
 
   // Time of day greeting
   const hour = new Date().getHours();
@@ -550,7 +554,116 @@ export const DashboardView: React.FC = () => {
             )}
           </div>
 
-          {/* 3. Emergency Contact Section (Moved UNDER Upcoming Doctor Visit) */}
+          {/* 3. Caregiver Contact Section (Directly ABOVE Emergency Contact) */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-3 hover:border-teal-300 transition-colors">
+            <div className="flex items-center justify-between">
+              <div
+                onClick={() => setIsCaregiverModalOpen(true)}
+                className="flex items-center gap-2 cursor-pointer group"
+                title="Click to view or update Caregiver Contact"
+              >
+                <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 group-hover:scale-105 transition-transform">
+                  <HeartHandshake className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 group-hover:text-teal-700 transition-colors flex items-center gap-1.5">
+                    <span>Caregiver Contact</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-all" />
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Automated peace of mind check-ins & support
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsCaregiverModalOpen(true)}
+                className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1"
+                aria-label={profile.caregiver ? 'Update caregiver contact' : 'Add caregiver contact'}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>{profile.caregiver ? 'Update' : 'Add'}</span>
+              </button>
+            </div>
+
+            {profile.caregiver ? (
+              <div
+                onClick={() => setIsCaregiverModalOpen(true)}
+                className="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-teal-50 transition-colors"
+                title="Click to edit caregiver details"
+              >
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-extrabold text-slate-900 text-base">
+                      {profile.caregiver.name}
+                    </h4>
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
+                      {profile.caregiver.relationship}
+                    </span>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white text-emerald-700 border border-emerald-200">
+                      {profile.caregiverNotificationsEnabled ? '✓ Alerts Active' : 'Alerts Paused'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm font-bold text-slate-700">
+                    {profile.caregiver.phone && (
+                      <p className="flex items-center gap-1.5">
+                        <Phone className="w-4 h-4 text-teal-600" />
+                        <span>{profile.caregiver.phone}</span>
+                      </p>
+                    )}
+                    {profile.caregiver.email && (
+                      <p className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                        <Mail className="w-3.5 h-3.5 text-teal-600" />
+                        <span>{profile.caregiver.email}</span>
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">
+                    Notified if medication doses or appointments are missed
+                  </p>
+                </div>
+
+                <div
+                  className="flex items-center gap-2 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {profile.caregiver.phone && (
+                    <a
+                      href={`tel:${profile.caregiver.phone.replace(/[^0-9]/g, '')}`}
+                      className="px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Call</span>
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setIsCaregiverModalOpen(true)}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => setIsCaregiverModalOpen(true)}
+                className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-4 text-center cursor-pointer hover:bg-teal-50/50 transition-colors"
+              >
+                <p className="text-sm font-semibold text-slate-700">No caregiver contact added yet</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsCaregiverModalOpen(true);
+                  }}
+                  className="mt-1 text-xs font-bold text-teal-700 hover:underline"
+                >
+                  + Add Caregiver Contact
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 4. Emergency Contact Section (Moved UNDER Caregiver Contact) */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-3 hover:border-red-300 transition-colors">
             <div className="flex items-center justify-between">
               <div
@@ -633,6 +746,7 @@ export const DashboardView: React.FC = () => {
       <AddMedicationModal isOpen={isAddMedOpen} onClose={() => setIsAddMedOpen(false)} />
       <AddAppointmentModal isOpen={isAddAptOpen} onClose={() => setIsAddAptOpen(false)} />
       <EditEmergencyContactModal isOpen={isEditEmergencyOpen} onClose={() => setIsEditEmergencyOpen(false)} />
+      <CaregiverModal isOpen={isCaregiverModalOpen} onClose={() => setIsCaregiverModalOpen(false)} />
     </div>
   );
 };
