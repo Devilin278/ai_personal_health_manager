@@ -560,7 +560,12 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           ...apt,
           checklist: [
             ...apt.checklist,
-            { id: `c-${Date.now()}`, text, completed: false, category },
+            {
+              id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              text,
+              completed: false,
+              category,
+            },
           ],
         };
       })

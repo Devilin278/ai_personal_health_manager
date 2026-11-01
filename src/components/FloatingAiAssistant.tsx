@@ -10,8 +10,18 @@ import {
   ChevronDown,
   RotateCcw,
   CheckCircle2,
+  Plus,
+  ListPlus,
+  ArrowRight,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
+
+export interface PreppedQuestionItem {
+  id: string;
+  category: 'question' | 'symptom' | 'document';
+  title: string;
+  text: string;
+}
 
 interface ChatMessage {
   id: string;
@@ -19,6 +29,9 @@ interface ChatMessage {
   text: string;
   time: string;
   suggestedQuestions?: string[];
+  actionableQuestions?: PreppedQuestionItem[];
+  targetAppointmentId?: string;
+  targetProviderName?: string;
 }
 
 export const FloatingAiAssistant: React.FC = () => {
@@ -32,6 +45,8 @@ export const FloatingAiAssistant: React.FC = () => {
     appointments,
     medications,
     speakText,
+    addChecklistItem,
+    setActiveTab,
   } = useHealth();
 
   const [inputQuery, setInputQuery] = useState('');
@@ -81,6 +96,32 @@ export const FloatingAiAssistant: React.FC = () => {
     }
   }, [isAiChatOpen, pendingAiPrompt]);
 
+  const handleAddQuestionToList = (q: PreppedQuestionItem, aptId?: string) => {
+    const targetApt = aptId ? appointments.find((a) => a.id === aptId) : appointments[0];
+    if (!targetApt) return;
+
+    const alreadyExists = targetApt.checklist.some(
+      (item) => item.text.trim().toLowerCase() === q.text.trim().toLowerCase()
+    );
+    if (!alreadyExists) {
+      addChecklistItem(targetApt.id, q.text, q.category || 'question');
+    }
+  };
+
+  const handleAddAllQuestionsToList = (questions: PreppedQuestionItem[], aptId?: string) => {
+    const targetApt = aptId ? appointments.find((a) => a.id === aptId) : appointments[0];
+    if (!targetApt) return;
+
+    questions.forEach((q) => {
+      const alreadyExists = targetApt.checklist.some(
+        (item) => item.text.trim().toLowerCase() === q.text.trim().toLowerCase()
+      );
+      if (!alreadyExists) {
+        addChecklistItem(targetApt.id, q.text, q.category || 'question');
+      }
+    });
+  };
+
   const handleSend = (textToSend?: string) => {
     const text = (textToSend || inputQuery).trim();
     if (!text) return;
@@ -98,17 +139,104 @@ export const FloatingAiAssistant: React.FC = () => {
 
     setTimeout(() => {
       let reply = '';
+      let actionableQuestions: PreppedQuestionItem[] | undefined;
+      let targetAptId: string | undefined;
+      let targetProviderName: string | undefined;
+
       const textLower = text.toLowerCase();
 
-      if (textLower.includes('cardiology') || textLower.includes('question') || textLower.includes('appointment') || textLower.includes('doctor')) {
-        reply = `Here are 4 focused questions tailored for your visit with ${appointments[0]?.providerName || 'Dr. Robert Vance'}:
+      // Identify best appointment match
+      const matchedApt =
+        appointments.find(
+          (a) =>
+            textLower.includes(a.providerName.toLowerCase()) ||
+            textLower.includes(a.specialty.toLowerCase()) ||
+            textLower.includes(a.clinicName.toLowerCase())
+        ) || appointments[0];
+
+      if (matchedApt) {
+        targetAptId = matchedApt.id;
+        targetProviderName = matchedApt.providerName;
+      }
+
+      if (
+        textLower.includes('cardiology') ||
+        textLower.includes('question') ||
+        textLower.includes('appointment') ||
+        textLower.includes('doctor') ||
+        textLower.includes('prep')
+      ) {
+        reply = `Here are 4 focused questions tailored for your visit with ${targetProviderName || 'your doctor'}:
 
 1. Blood Pressure: "My morning home readings average around 124/78 mmHg. Does this align with your target for me?"
 2. Prescription Tolerance: "I have been taking Lisinopril in the morning and Metformin with dinner. Are there any subtle side effects I should monitor?"
 3. Mobility & Stretches: "I notice mild morning stiffness in my knees. Are there safe daily mobility stretches you recommend?"
 4. Immunizations: "Are there any seasonal boosters (flu, pneumonia, shingles) due for me?"
 
-💡 You can check these off in your Doctor Appointments checklist tab!`;
+💡 You can add any or all of these directly to your pre-visit checklist below!`;
+
+        actionableQuestions = [
+          {
+            id: 'pq-bp',
+            category: 'question',
+            title: 'Blood Pressure Target',
+            text: 'My morning home readings average around 124/78 mmHg. Does this align with your target for me?',
+          },
+          {
+            id: 'pq-meds',
+            category: 'question',
+            title: 'Prescription Tolerance',
+            text: 'I have been taking Lisinopril in the morning and Metformin with dinner. Are there any subtle side effects I should monitor?',
+          },
+          {
+            id: 'pq-mobility',
+            category: 'question',
+            title: 'Mobility & Stretches',
+            text: 'I notice mild morning stiffness in my knees. Are there safe daily mobility stretches you recommend?',
+          },
+          {
+            id: 'pq-vaccines',
+            category: 'question',
+            title: 'Immunizations',
+            text: 'Are there any seasonal boosters (flu, pneumonia, shingles) due for me?',
+          },
+        ];
+      } else if (
+        textLower.includes('pharmacist') ||
+        textLower.includes('supplement') ||
+        textLower.includes('interaction')
+      ) {
+        reply = `Safe Pharmacist Consultation Guide:
+
+General AI assistants must never determine whether combining specific medications and supplements is safe. Clinical pharmacists have specialized database tools for interaction verification.
+
+Recommended questions to ask your pharmacist:
+1. "I take Lisinopril for blood pressure, Metformin for blood sugar, plus CoQ10 and Calcium D3. Do any of these interact?"
+2. "Should I take my Calcium supplement at a different time from my morning prescriptions?"
+3. "Which over-the-counter pain or cold medicines should I avoid with my blood pressure pills?"
+
+💡 You can add these questions directly to your visit checklist below!`;
+
+        actionableQuestions = [
+          {
+            id: 'pq-pharm-1',
+            category: 'question',
+            title: 'Prescription & Supplement Interactions',
+            text: 'I take Lisinopril for blood pressure, Metformin for blood sugar, plus CoQ10 and Calcium D3. Do any of these interact?',
+          },
+          {
+            id: 'pq-pharm-2',
+            category: 'question',
+            title: 'Supplement Timing',
+            text: 'Should I take my Calcium supplement at a different time from my morning prescriptions?',
+          },
+          {
+            id: 'pq-pharm-3',
+            category: 'question',
+            title: 'OTC Medicine Precautions',
+            text: 'Which over-the-counter pain or cold medicines should I avoid with my blood pressure pills?',
+          },
+        ];
       } else if (textLower.includes('hba1c') || textLower.includes('bloodwork') || textLower.includes('ldl') || textLower.includes('lab') || textLower.includes('result')) {
         reply = `Here is a plain-language explanation of standard lab bloodwork terms:
 
@@ -117,15 +245,6 @@ export const FloatingAiAssistant: React.FC = () => {
 • eGFR Kidney Filtration (78 mL/min): Measures how well kidneys filter waste. Readings above 60 indicate good functioning for older adults.
 
 *Note: Always review official laboratory reports directly with your physician.*`;
-      } else if (textLower.includes('pharmacist') || textLower.includes('supplement') || textLower.includes('interaction')) {
-        reply = `Safe Pharmacist Consultation Guide:
-
-General AI assistants must never determine whether combining specific medications and supplements is safe. Clinical pharmacists have specialized database tools for interaction verification.
-
-Recommended questions to ask your pharmacist:
-1. "I take Lisinopril for blood pressure, Metformin for blood sugar, plus CoQ10 and Calcium D3. Do any of these interact?"
-2. "Should I take my Calcium supplement at a different time from my morning prescriptions?"
-3. "Which over-the-counter pain or cold medicines should I avoid with my blood pressure pills?"`;
       } else if (textLower.includes('lisinopril') || textLower.includes('ace inhibitor')) {
         reply = `What is Lisinopril and how does it help?
 
@@ -146,6 +265,9 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
         sender: 'assistant',
         text: reply,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actionableQuestions,
+        targetAppointmentId: targetAptId,
+        targetProviderName: targetProviderName,
       };
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -257,12 +379,103 @@ If you are experiencing any new, uncomfortable, or changing symptoms, please not
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl p-3.5 text-sm leading-relaxed shadow-xs ${isUser
+                className={`max-w-[92%] sm:max-w-[88%] rounded-2xl p-3.5 text-sm leading-relaxed shadow-xs ${isUser
                     ? 'bg-teal-700 text-white rounded-br-none'
                     : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
                   }`}
               >
                 <div className="whitespace-pre-wrap">{msg.text}</div>
+
+                {!isUser && msg.actionableQuestions && msg.actionableQuestions.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-200 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-teal-600" />
+                        <span className="text-xs font-bold text-teal-900">
+                          Prepped Questions ({msg.actionableQuestions.length}):
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddAllQuestionsToList(msg.actionableQuestions!, msg.targetAppointmentId)}
+                        className="px-2.5 py-1 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                        title="Add all questions to visit checklist"
+                      >
+                        <ListPlus className="w-3.5 h-3.5" />
+                        <span>Add All to List</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {msg.actionableQuestions.map((q) => {
+                        const targetApt =
+                          appointments.find((a) => a.id === msg.targetAppointmentId) || appointments[0];
+                        const isAdded = targetApt?.checklist.some(
+                          (item) => item.text.trim().toLowerCase() === q.text.trim().toLowerCase()
+                        );
+
+                        return (
+                          <div
+                            key={q.id}
+                            className={`p-2.5 rounded-xl border transition-all text-xs flex flex-col gap-1.5 ${
+                              isAdded
+                                ? 'bg-emerald-50/70 border-emerald-300 text-slate-800'
+                                : 'bg-slate-50 border-slate-200 text-slate-800 hover:border-teal-300'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="font-bold text-teal-900 leading-snug">
+                                {q.title}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleAddQuestionToList(q, msg.targetAppointmentId)}
+                                disabled={isAdded}
+                                className={`px-2 py-1 rounded-lg font-bold text-xs flex items-center gap-1 shrink-0 transition-all ${
+                                  isAdded
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
+                                    : 'bg-white hover:bg-teal-50 border border-teal-600 text-teal-800 shadow-2xs active:scale-95 cursor-pointer'
+                                }`}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>Added ✓</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5 text-teal-700" />
+                                    <span>+ Add to List</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                            <p className="text-slate-600 italic leading-snug">
+                              "{q.text}"
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500">
+                      <span>
+                        Target: <strong>{msg.targetProviderName || appointments[0]?.providerName || 'Upcoming Visit'}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('appointments');
+                          closeAiChat();
+                        }}
+                        className="text-teal-700 hover:text-teal-900 font-bold underline flex items-center gap-0.5 cursor-pointer"
+                      >
+                        <span>View in Appointments</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {!isUser && (
                   <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
