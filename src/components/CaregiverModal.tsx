@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, HeartHandshake, Trash2, Check, AlertCircle, Phone, Mail, User } from 'lucide-react';
 import { CaregiverInfo } from '../types/health';
 import { useHealth } from '../context/HealthContext';
@@ -76,13 +77,13 @@ export const CaregiverModal: React.FC<CaregiverModalProps> = ({ isOpen, onClose 
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-900 border border-slate-200">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-900 border border-slate-200 m-auto my-auto">
         {/* Header */}
         <div className="bg-teal-700 text-white px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -269,7 +270,8 @@ export const CaregiverModal: React.FC<CaregiverModalProps> = ({ isOpen, onClose 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

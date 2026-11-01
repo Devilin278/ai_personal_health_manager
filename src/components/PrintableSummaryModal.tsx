@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Printer, Download, X, Heart, ShieldCheck, Pencil } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { getTodayDateString } from '../data/mockData';
@@ -27,12 +28,14 @@ export const PrintableSummaryModal: React.FC<PrintableSummaryModalProps> = ({
   const latestWellness = wellnessData[0];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-900 border border-slate-300">
+    <>
+      {createPortal(
+        <div
+          className="fixed inset-0 z-[9999] overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-900 border border-slate-300 m-auto my-auto">
         {/* Top Action Bar */}
         <div className="bg-teal-800 text-white px-6 py-4 flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center gap-2">
@@ -275,13 +278,16 @@ export const PrintableSummaryModal: React.FC<PrintableSummaryModalProps> = ({
           </button>
         </div>
       </div>
+    </div>,
+    document.body
+  )}
 
-      {/* Edit Emergency Contact Modal */}
-      <EditEmergencyContactModal
-        isOpen={isEditEmergencyOpen}
-        onClose={() => setIsEditEmergencyOpen(false)}
-      />
-    </div>
+  {/* Edit Emergency Contact Modal */}
+  <EditEmergencyContactModal
+    isOpen={isEditEmergencyOpen}
+    onClose={() => setIsEditEmergencyOpen(false)}
+  />
+</>
   );
 };
 

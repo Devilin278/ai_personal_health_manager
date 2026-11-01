@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ShieldAlert, Phone, User, HeartHandshake, Check } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 
@@ -57,14 +58,14 @@ export const EditEmergencyContactModal: React.FC<EditEmergencyContactModalProps>
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[10000] overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="emergency-contact-modal-title"
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-900 border border-slate-200">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-900 border border-slate-200 m-auto my-auto">
         {/* Header */}
         <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -199,7 +200,8 @@ export const EditEmergencyContactModal: React.FC<EditEmergencyContactModalProps>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
