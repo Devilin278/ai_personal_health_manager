@@ -196,7 +196,23 @@ export const HealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Appointments
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
-    return saved ? JSON.parse(saved) : initialAppointments;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasPastVisits = parsed.filter((a: Appointment) => a.status === 'completed').length >= 3;
+          if (!hasPastVisits) {
+            const existingIds = new Set(parsed.map((a: Appointment) => a.id));
+            const missing = initialAppointments.filter((a) => !existingIds.has(a.id));
+            return [...parsed, ...missing];
+          }
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Failed to parse appointments', e);
+      }
+    }
+    return initialAppointments;
   });
 
   // Health Records

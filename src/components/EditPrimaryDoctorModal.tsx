@@ -159,3 +159,4 @@ export const EditPrimaryDoctorModal: React.FC<EditPrimaryDoctorModalProps> = ({
     </div>
   );
 };
+

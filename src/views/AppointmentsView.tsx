@@ -13,10 +13,13 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Sparkles,
   Volume2,
   Stethoscope,
   Pencil,
+  History,
 } from 'lucide-react';
 import { Appointment } from '../types/health';
 import { useHealth } from '../context/HealthContext';
@@ -41,13 +44,28 @@ export const AppointmentsView: React.FC = () => {
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isEditDoctorModalOpen, setIsEditDoctorModalOpen] = useState(false);
+  const [visiblePastCount, setVisiblePastCount] = useState<number>(3);
+
+  const scheduledVisits = appointments.filter(
+    (apt) => apt.status !== 'completed' && apt.status !== 'cancelled'
+  );
+  const pastVisits = appointments
+    .filter((apt) => apt.status === 'completed' || apt.status === 'cancelled')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const displayedPastVisits = pastVisits.slice(0, visiblePastCount);
+  const hasMorePastVisits = pastVisits.length > visiblePastCount;
 
   // Selected appointment for detail inspection & post-visit notes
   const [selectedAptId, setSelectedAptId] = useState<string>(
-    appointments[0]?.id || ''
+    scheduledVisits[0]?.id || pastVisits[0]?.id || appointments[0]?.id || ''
   );
 
-  const selectedApt = appointments.find((a) => a.id === selectedAptId) || appointments[0];
+  const selectedApt =
+    appointments.find((a) => a.id === selectedAptId) ||
+    scheduledVisits[0] ||
+    pastVisits[0] ||
+    appointments[0];
 
   // Post visit notes local form state
   const [postSummaryInput, setPostSummaryInput] = useState(
@@ -171,57 +189,172 @@ export const AppointmentsView: React.FC = () => {
       {/* Main Grid: Agenda List on Left (5 cols) & Selected Appointment Prep Workspace on Right (7 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Appointments Agenda List */}
-        <div className="lg:col-span-5 space-y-3">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">
-            Scheduled Visits
-          </h3>
+        <div className="lg:col-span-5 space-y-6">
+          {/* Section 1: Scheduled Visits */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-blue-600" />
+                <span>Scheduled Visits ({scheduledVisits.length})</span>
+              </h3>
+            </div>
 
-          {appointments.map((apt) => {
-            const isSelected = apt.id === selectedAptId;
-            const completedChecks = apt.checklist.filter((c) => c.completed).length;
+            {scheduledVisits.length > 0 ? (
+              scheduledVisits.map((apt) => {
+                const isSelected = apt.id === selectedAptId;
+                const completedChecks = apt.checklist.filter((c) => c.completed).length;
 
-            return (
-              <div
-                key={apt.id}
-                onClick={() => setSelectedAptId(apt.id)}
-                className={`p-5 rounded-3xl border-2 cursor-pointer transition-all ${isSelected
-                    ? 'bg-blue-50/80 border-blue-600 shadow-md ring-2 ring-blue-500/20'
-                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
-                  }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
-                      {apt.specialty}
-                    </span>
-                    <h4 className="text-lg font-bold text-slate-900 mt-0.5">
-                      {apt.providerName}
-                    </h4>
-                    <p className="text-xs text-slate-600">{apt.clinicName}</p>
-                  </div>
-
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase ${apt.visitType === 'in-person'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-purple-100 text-purple-800'
-                      }`}
+                return (
+                  <div
+                    key={apt.id}
+                    onClick={() => setSelectedAptId(apt.id)}
+                    className={`p-5 rounded-3xl border-2 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-blue-50/80 border-blue-600 shadow-md ring-2 ring-blue-500/20'
+                        : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+                    }`}
                   >
-                    {apt.visitType}
-                  </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
+                          {apt.specialty}
+                        </span>
+                        <h4 className="text-lg font-bold text-slate-900 mt-0.5">
+                          {apt.providerName}
+                        </h4>
+                        <p className="text-xs text-slate-600">{apt.clinicName}</p>
+                      </div>
+
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase ${
+                          apt.visitType === 'in-person'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}
+                      >
+                        {apt.visitType}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-700">
+                      <div className="flex items-center gap-1.5 text-teal-800">
+                        <CalendarDays className="w-4 h-4" />
+                        <span>{apt.date} at {apt.time}</span>
+                      </div>
+                      <span className="text-slate-500 font-medium">
+                        {completedChecks}/{apt.checklist.length} checklist items ready
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="bg-slate-50 border border-dashed border-slate-300 rounded-3xl p-6 text-center text-slate-500">
+                <p className="text-sm font-semibold">No scheduled visits upcoming.</p>
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="mt-2 text-xs font-bold text-blue-700 hover:underline cursor-pointer"
+                >
+                  + Schedule a Doctor Visit
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Past Visits (Under Scheduled Visits, limited to 3 with Load More) */}
+          <div className="space-y-3 pt-4 border-t-2 border-slate-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <History className="w-4 h-4 text-slate-500" />
+                <span>Past Visits ({pastVisits.length})</span>
+              </h3>
+              <span className="text-xs text-slate-500 font-medium">
+                {displayedPastVisits.length} of {pastVisits.length} shown
+              </span>
+            </div>
+
+            {pastVisits.length > 0 ? (
+              <>
+                <div className="space-y-3">
+                  {displayedPastVisits.map((apt) => {
+                    const isSelected = apt.id === selectedAptId;
+
+                    return (
+                      <div
+                        key={apt.id}
+                        onClick={() => setSelectedAptId(apt.id)}
+                        className={`p-4 sm:p-5 rounded-3xl border-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-slate-100 border-slate-600 shadow-md ring-2 ring-slate-400/20'
+                            : 'bg-slate-50/80 hover:bg-slate-100 border-slate-200 shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
+                              {apt.specialty}
+                            </span>
+                            <h4 className="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
+                              {apt.providerName}
+                            </h4>
+                            <p className="text-xs text-slate-600">{apt.clinicName}</p>
+                          </div>
+
+                          <span className="text-xs px-2.5 py-1 rounded-full font-bold uppercase bg-emerald-100 text-emerald-800 flex items-center gap-1 shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Completed</span>
+                          </span>
+                        </div>
+
+                        {/* Date and Action Link */}
+                        <div className="mt-3 pt-3 border-t border-slate-200/70 flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-700">
+                          <div className="flex items-center gap-1.5 text-slate-600">
+                            <CalendarDays className="w-4 h-4 text-slate-500" />
+                            <span>{apt.date} at {apt.time}</span>
+                          </div>
+                          <span className="text-xs text-blue-700 font-bold">
+                            View Notes →
+                          </span>
+                        </div>
+
+                        {apt.postVisitNotes?.summary && (
+                          <div className="mt-2 text-xs text-slate-600 line-clamp-2 bg-white rounded-xl p-2.5 border border-slate-200 font-medium">
+                            <strong className="text-slate-800">Doctor Note: </strong>
+                            {apt.postVisitNotes.summary}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-700">
-                  <div className="flex items-center gap-1.5 text-teal-800">
-                    <CalendarDays className="w-4 h-4" />
-                    <span>{apt.date} at {apt.time}</span>
-                  </div>
-                  <span className="text-slate-500 font-medium">
-                    {completedChecks}/{apt.checklist.length} checklist items ready
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                {/* Click to Load More Button */}
+                {hasMorePastVisits && (
+                  <button
+                    onClick={() => setVisiblePastCount((prev) => prev + 3)}
+                    className="w-full py-3 px-4 bg-white hover:bg-slate-100 border-2 border-slate-300 text-slate-800 font-bold rounded-2xl text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    <ChevronDown className="w-4 h-4 text-slate-600" />
+                    <span>Click to load more ({pastVisits.length - visiblePastCount} remaining)</span>
+                  </button>
+                )}
+
+                {!hasMorePastVisits && pastVisits.length > 3 && (
+                  <button
+                    onClick={() => setVisiblePastCount(3)}
+                    className="w-full py-2 px-4 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    <span>Show Less</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-slate-500 italic p-3 text-center bg-slate-50 rounded-2xl border border-slate-200">
+                No past doctor visits recorded.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Right: Selected Appointment Interactive Prep Workspace */}

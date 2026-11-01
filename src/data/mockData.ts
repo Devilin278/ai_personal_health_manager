@@ -393,6 +393,121 @@ export const initialAppointments: Appointment[] = [
       nextAppointmentNeeded: 'Check back in 3 months if knee discomfort recurs',
     },
   },
+  {
+    id: 'apt-4',
+    providerName: 'Dr. Robert Vance, MD',
+    specialty: 'Cardiology & Preventive Medicine',
+    clinicName: 'Oakridge Family & Heart Health Pavilion',
+    location: 'Suite 300, 1045 Medical Plaza Way, Oakridge',
+    phone: '(555) 345-6789',
+    date: '2026-08-20',
+    time: '09:30 AM',
+    visitType: 'in-person',
+    reminderLeadHours: [24],
+    status: 'completed',
+    checklist: [
+      {
+        id: 'c-vance-past-1',
+        text: '6-Month blood pressure and medication tolerance evaluation.',
+        completed: true,
+        category: 'question',
+      },
+    ],
+    postVisitNotes: {
+      summary: 'Blood pressure readings are well-controlled at home (average 124/76 mmHg). Continue current Lisinopril 10mg daily in the morning.',
+      followUpTasks: [
+        'Continue daily morning blood pressure log',
+        'Routine 6-month metabolic lab bloodwork in October',
+      ],
+      nextAppointmentNeeded: 'Routine follow-up in November 2026',
+    },
+  },
+  {
+    id: 'apt-5',
+    providerName: 'Dr. Marcus Young, DDS',
+    specialty: 'Senior Dental Care & Hygiene',
+    clinicName: 'Oakridge Gentle Dental Practice',
+    location: '512 Oakridge Center Way, Suite 204',
+    phone: '(555) 890-1234',
+    date: '2026-06-12',
+    time: '01:30 PM',
+    visitType: 'in-person',
+    reminderLeadHours: [24],
+    status: 'completed',
+    checklist: [
+      {
+        id: 'c-dent-1',
+        text: 'Routine dental cleaning and check for gum sensitivity.',
+        completed: true,
+        category: 'question',
+      },
+    ],
+    postVisitNotes: {
+      summary: 'Routine cleaning completed with no cavities. Mild gum recession noted on lower molars. Recommended soft bristle brush and sensitive toothpaste.',
+      followUpTasks: [
+        'Use fluoride rinse before bedtime',
+        'Schedule next cleaning in December',
+      ],
+      nextAppointmentNeeded: '6-Month routine checkup in December 2026',
+    },
+  },
+  {
+    id: 'apt-6',
+    providerName: 'Dr. Helen Wu, MD',
+    specialty: 'Ophthalmology & Glaucoma Specialist',
+    clinicName: 'Clearview Eye Institute',
+    location: '720 Vision Parkway, Suite 120, Oakridge',
+    phone: '(555) 654-3210',
+    date: '2026-04-05',
+    time: '10:00 AM',
+    visitType: 'in-person',
+    reminderLeadHours: [24],
+    status: 'completed',
+    checklist: [
+      {
+        id: 'c-wu-past-1',
+        text: 'Annual glaucoma eye pressure check and lens review.',
+        completed: true,
+        category: 'question',
+      },
+    ],
+    postVisitNotes: {
+      summary: 'Intraocular pressure is 15 mmHg in both eyes (normal range). Mild dry eye symptoms. Prescribed Systane lubricating drops as needed.',
+      followUpTasks: [
+        'Use lubricating drops morning and evening',
+        'Wear UV protective sunglasses outdoors',
+      ],
+      nextAppointmentNeeded: 'Annual exam in November 2026',
+    },
+  },
+  {
+    id: 'apt-7',
+    providerName: 'Dr. Robert Vance, MD',
+    specialty: 'Family Medicine & Preventive Health',
+    clinicName: 'Oakridge Family & Heart Health Pavilion',
+    location: 'Suite 300, 1045 Medical Plaza Way, Oakridge',
+    phone: '(555) 345-6789',
+    date: '2026-01-18',
+    time: '02:00 PM',
+    visitType: 'in-person',
+    reminderLeadHours: [24],
+    status: 'completed',
+    checklist: [
+      {
+        id: 'c-flu-1',
+        text: 'Annual senior flu booster vaccine.',
+        completed: true,
+        category: 'document',
+      },
+    ],
+    postVisitNotes: {
+      summary: 'Senior high-dose influenza vaccine administered in left deltoid. Patient tolerated injection well without any adverse reaction.',
+      followUpTasks: [
+        'Keep injection site clean and dry for 24 hours',
+      ],
+      nextAppointmentNeeded: 'Routine checkup in August 2026',
+    },
+  },
 ];
 
 export const initialHealthRecords: HealthRecord[] = [
