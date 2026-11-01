@@ -15,14 +15,18 @@ import {
   ChevronRight,
   Sparkles,
   Volume2,
+  Stethoscope,
+  Pencil,
 } from 'lucide-react';
 import { Appointment } from '../types/health';
 import { useHealth } from '../context/HealthContext';
 import { AddAppointmentModal } from '../components/AddAppointmentModal';
 import { PrintableSummaryModal } from '../components/PrintableSummaryModal';
+import { EditPrimaryDoctorModal } from '../components/EditPrimaryDoctorModal';
 
 export const AppointmentsView: React.FC = () => {
   const {
+    profile,
     appointments,
     toggleChecklistItem,
     addChecklistItem,
@@ -36,6 +40,7 @@ export const AppointmentsView: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isEditDoctorModalOpen, setIsEditDoctorModalOpen] = useState(false);
 
   // Selected appointment for detail inspection & post-visit notes
   const [selectedAptId, setSelectedAptId] = useState<string>(
@@ -120,6 +125,45 @@ export const AppointmentsView: React.FC = () => {
           >
             <Plus className="w-5 h-5" />
             <span>Schedule Appointment</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Primary Care Physician Card */}
+      <div className="bg-white border-2 border-blue-100 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs hover:border-blue-300 transition-colors">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shrink-0 shadow-2xs">
+            <Stethoscope className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                Primary Care Physician (PCP)
+              </span>
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900 mt-1">
+              {profile.primaryDoctor.name}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium">
+              {profile.primaryDoctor.clinic} • {profile.primaryDoctor.phone}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href={`tel:${profile.primaryDoctor.phone.replace(/[^0-9]/g, '')}`}
+            className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>Call Clinic</span>
+          </a>
+          <button
+            onClick={() => setIsEditDoctorModalOpen(true)}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>Edit Doctor</span>
           </button>
         </div>
       </div>
@@ -429,6 +473,7 @@ export const AppointmentsView: React.FC = () => {
         editAppointment={editingApt}
       />
       <PrintableSummaryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} />
+      <EditPrimaryDoctorModal isOpen={isEditDoctorModalOpen} onClose={() => setIsEditDoctorModalOpen(false)} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, AlertCircle, X, ShieldAlert, HeartPulse, User, Pencil } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { EditEmergencyContactModal } from './EditEmergencyContactModal';
+import { EditPrimaryDoctorModal } from './EditPrimaryDoctorModal';
 
 interface EmergencyModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface EmergencyModalProps {
 export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose }) => {
   const { profile, speakText } = useHealth();
   const [isEditContactOpen, setIsEditContactOpen] = useState(false);
+  const [isEditDoctorOpen, setIsEditDoctorOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -58,9 +60,18 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
             {/* Primary Doctor */}
             <div className="border-2 border-slate-200 rounded-xl p-4 bg-slate-50 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-teal-800 font-bold mb-1">
-                  <HeartPulse className="w-5 h-5" />
-                  <span>Primary Doctor</span>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2 text-teal-800 font-bold">
+                    <HeartPulse className="w-5 h-5" />
+                    <span>Primary Doctor</span>
+                  </div>
+                  <button
+                    onClick={() => setIsEditDoctorOpen(true)}
+                    className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
                 </div>
                 <p className="font-bold text-lg text-slate-800">{profile.primaryDoctor.name}</p>
                 <p className="text-sm text-slate-600">{profile.primaryDoctor.clinic}</p>
@@ -165,6 +176,12 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
       <EditEmergencyContactModal
         isOpen={isEditContactOpen}
         onClose={() => setIsEditContactOpen(false)}
+      />
+
+      {/* Edit Primary Doctor Modal */}
+      <EditPrimaryDoctorModal
+        isOpen={isEditDoctorOpen}
+        onClose={() => setIsEditDoctorOpen(false)}
       />
     </div>
   );

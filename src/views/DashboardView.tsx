@@ -21,6 +21,7 @@ import {
   User,
   HeartHandshake,
   Mail,
+  Stethoscope,
 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 import { PrintableSummaryModal } from '../components/PrintableSummaryModal';
@@ -28,6 +29,7 @@ import { AddMedicationModal } from '../components/AddMedicationModal';
 import { AddAppointmentModal } from '../components/AddAppointmentModal';
 import { EditEmergencyContactModal } from '../components/EditEmergencyContactModal';
 import { CaregiverModal } from '../components/CaregiverModal';
+import { EditPrimaryDoctorModal } from '../components/EditPrimaryDoctorModal';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -50,6 +52,7 @@ export const DashboardView: React.FC = () => {
   const [isAddAptOpen, setIsAddAptOpen] = useState(false);
   const [isEditEmergencyOpen, setIsEditEmergencyOpen] = useState(false);
   const [isCaregiverModalOpen, setIsCaregiverModalOpen] = useState(false);
+  const [isEditDoctorOpen, setIsEditDoctorOpen] = useState(false);
 
   // Time of day greeting
   const hour = new Date().getHours();
@@ -113,9 +116,15 @@ export const DashboardView: React.FC = () => {
               <span className="bg-teal-900/60 border border-teal-500/30 px-3 py-1 rounded-full font-semibold">
                 Blood Type: {profile.bloodType}
               </span>
-              <span className="bg-teal-900/60 border border-teal-500/30 px-3 py-1 rounded-full font-semibold">
-                Doctor: {profile.primaryDoctor.name}
-              </span>
+              <button
+                onClick={() => setIsEditDoctorOpen(true)}
+                className="bg-blue-950/70 hover:bg-blue-900/90 border border-blue-400/40 text-blue-100 px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 transition-all text-xs sm:text-sm active:scale-95 cursor-pointer shadow-xs"
+                title="Click to update primary doctor"
+              >
+                <Stethoscope className="w-3.5 h-3.5 text-blue-300" />
+                <span>Doctor: {profile.primaryDoctor.name}</span>
+                <Pencil className="w-3 h-3 text-blue-300" />
+              </button>
               <button
                 onClick={() => setIsEditEmergencyOpen(true)}
                 className="bg-red-950/70 hover:bg-red-900/90 border border-red-400/40 text-red-100 px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 transition-all text-xs sm:text-sm active:scale-95 cursor-pointer shadow-xs"
@@ -747,6 +756,7 @@ export const DashboardView: React.FC = () => {
       <AddAppointmentModal isOpen={isAddAptOpen} onClose={() => setIsAddAptOpen(false)} />
       <EditEmergencyContactModal isOpen={isEditEmergencyOpen} onClose={() => setIsEditEmergencyOpen(false)} />
       <CaregiverModal isOpen={isCaregiverModalOpen} onClose={() => setIsCaregiverModalOpen(false)} />
+      <EditPrimaryDoctorModal isOpen={isEditDoctorOpen} onClose={() => setIsEditDoctorOpen(false)} />
     </div>
   );
 };
